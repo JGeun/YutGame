@@ -67,6 +67,7 @@ public class YutGameClientView extends JFrame {
 	private JButton imgBtn;
 
 	private Image mainBackground = new ImageIcon(YutGameClientView.class.getResource("images/bg_main.jpg")).getImage();
+	private Image yutBackground = new ImageIcon(YutGameClientView.class.getResource("images/bg_yut.png")).getImage();
 	private Image background = new ImageIcon(YutGameClientView.class.getResource("images/bg_gamepanel.jpg")).getImage();
 	private ImageIcon gameSmallSpot = new ImageIcon(
 			YutGameClientView.class.getResource("images/ic_game_small_spot.png"));
@@ -205,22 +206,28 @@ public class YutGameClientView extends JFrame {
 		btnNewButton.setBounds(1183, 778, 69, 40);
 		contentPane.add(btnNewButton);
 		
-		JPanel panel_3 = new JPanel();
-		panel_3.setBounds(829, 22, 423, 353);
-		contentPane.add(panel_3);
+		JPanel yutPanel = new JPanel()  {
+			public void paintComponent(Graphics g) {
+				g.drawImage(yutBackground, 0, 0, null);
+				setOpaque(false);
+				super.paintComponent(g);
+			}
+		};
+		yutPanel.setBounds(829, 22, 423, 364);
+		contentPane.add(yutPanel);
 		
-		JCheckBox chckbxNewCheckBox = new JCheckBox("New check box");
-		chckbxNewCheckBox.setBounds(828, 487, 115, 23);
-		contentPane.add(chckbxNewCheckBox);
+		JButton btnRollYut = new JButton("Roll");
+		btnRollYut.setBounds(993, 396, 97, 23);
+		contentPane.add(btnRollYut);
 		
-		JButton btnNewButton_1 = new JButton("New button");
-		btnNewButton_1.setBounds(1115, 487, 97, 23);
-		contentPane.add(btnNewButton_1);
+		JCheckBox autoPlayCheck = new JCheckBox("Auto Play");
+		autoPlayCheck.setBounds(828, 487, 115, 23);
+		contentPane.add(autoPlayCheck);
 		
-		JButton btnNewButton_2 = new JButton("New button");
-		btnNewButton_2.setBounds(993, 396, 97, 23);
-		contentPane.add(btnNewButton_2);
-
+		JButton btnRollBack = new JButton("RollBack");
+		btnRollBack.setBounds(1115, 487, 97, 23);
+		contentPane.add(btnRollBack);
+		
 		try {
 			socket = new Socket(ip_addr, Integer.parseInt(port_no));
 
