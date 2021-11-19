@@ -124,6 +124,9 @@ public class YutGameServer extends JFrame {
 					UserVec.add(new_user); // 새로운 참가자 배열에 추가
 					new_user.start(); // 만든 객체의 스레드 실행
 					AppendText("현재 참가자 수 " + UserVec.size());
+					for (int i = 0; i < UserVec.size(); i++) {
+						UserService user = (UserService) UserVec.elementAt(i);
+					}
 				} catch (IOException e) {
 					AppendText("accept() error");
 					//System.exit(0);
@@ -160,6 +163,7 @@ public class YutGameServer extends JFrame {
 		private Socket client_socket;
 		private Vector user_vc;
 		public String UserName = "";
+		public String imagepath = "";
 		public String UserStatus;
 
 		public UserService(Socket client_socket) {

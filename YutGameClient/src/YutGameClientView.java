@@ -22,6 +22,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.util.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -73,6 +74,13 @@ public class YutGameClientView extends JFrame {
 			YutGameClientView.class.getResource("images/ic_game_small_spot.png"));
 	private ImageIcon gameBigSpot = new ImageIcon(YutGameClientView.class.getResource("images/ic_game_big_spot.png"));
 
+	
+	
+	
+	private JPanel[] userPanel = new JPanel[4];
+	private JLabel[] userImageLabel = new JLabel[4];
+	private JLabel[] userNameText = new JLabel[4];
+	private ArrayList<UserData> userList = new ArrayList(); 
 	/**
 	 * Create the frame.
 	 */
@@ -141,21 +149,24 @@ public class YutGameClientView extends JFrame {
 		panel.setBounds(24, 10, 780, 650);
 		contentPane.add(panel);
 
-		JPanel panel_1 = new JPanel();
-		panel_1.setBounds(24, 680, 135, 169);
-		contentPane.add(panel_1);
-
-		JPanel panel_2 = new JPanel();
-		panel_2.setBounds(243, 680, 135, 169);
-		contentPane.add(panel_2);
-
-		JPanel panel_2_1 = new JPanel();
-		panel_2_1.setBounds(458, 680, 135, 169);
-		contentPane.add(panel_2_1);
-
-		JPanel panel_2_1_1 = new JPanel();
-		panel_2_1_1.setBounds(669, 680, 135, 169);
-		contentPane.add(panel_2_1_1);
+		for(int i=0; i<4; i++) {
+			userPanel[i] = new JPanel();
+			userImageLabel[i] = new JLabel();
+			userNameText[i] = new JLabel();
+			if(i == 0) {
+				userPanel[i].setBounds(24, 680, 135, 169);
+				userImageLabel[i].setBounds(24, 680, 135, 169);
+				userImageLabel[i].setIcon(new ImageIcon(gameSmallSpot.getImage().getScaledInstance(100,170,Image.SCALE_SMOOTH)));
+				userNameText[i].setBounds(24, 680, 135, 169);
+				userNameText[i].setText("Username1");
+				contentPane.add(userImageLabel[i]);
+				contentPane.add(userNameText[i]);
+			}
+			else if(i==1) userPanel[i].setBounds(243, 680, 135, 169);
+			else if(i==2) userPanel[i].setBounds(458, 680, 135, 169);
+			else userPanel[i].setBounds(669, 680, 135, 169);
+			contentPane.add(userPanel[i]);
+		}
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBounds(828, 538, 424, 181);
@@ -235,7 +246,7 @@ public class YutGameClientView extends JFrame {
 			oos.flush();
 			ois = new ObjectInputStream(socket.getInputStream());
 
-			ChatMsg obcm = new ChatMsg(UserName, "100", "Hello");
+			ChatMsg obcm = new ChatMsg(UserName, "100", "Hello"); // 로그인
 			SendChatMsg(obcm);
 
 			ListenNetwork net = new ListenNetwork();
@@ -246,7 +257,8 @@ public class YutGameClientView extends JFrame {
 			txtInput.requestFocus();
 			ImageSendAction action2 = new ImageSendAction();
 			imgBtn.addActionListener(action2);
-
+			//list이용해서 유저
+			
 		} catch (NumberFormatException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
