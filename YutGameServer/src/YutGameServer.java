@@ -42,6 +42,7 @@ public class YutGameServer extends JFrame {
 	private Socket client_socket; // accept() 에서 생성된 client 소켓
 	private Vector UserVec = new Vector(); // 연결된 사용자를 저장할 벡터
 	private static final int BUF_LEN = 128; // Windows 처럼 BUF_LEN 을 정의
+	private UserData[] userList = new UserData[4];
 
 	/**
 	 * Launch the application.
@@ -102,6 +103,9 @@ public class YutGameServer extends JFrame {
 				btnServerStart.setText("Chat Server Running..");
 				btnServerStart.setEnabled(false); // 서버를 더이상 실행시키지 못 하게 막는다
 				txtPortNumber.setEnabled(false); // 더이상 포트번호 수정못 하게 막는다
+				
+				for(int i=0; i<4; i++) userList[i] = new UserData(-1, "Name");
+				
 				AcceptServer accept_server = new AcceptServer();
 				accept_server.start();
 			}
@@ -124,9 +128,7 @@ public class YutGameServer extends JFrame {
 					UserVec.add(new_user); // 새로운 참가자 배열에 추가
 					new_user.start(); // 만든 객체의 스레드 실행
 					AppendText("현재 참가자 수 " + UserVec.size());
-					for (int i = 0; i < UserVec.size(); i++) {
-						UserService user = (UserService) UserVec.elementAt(i);
-					}
+					System.out.println("현재 참가자 수 출력: " + UserVec.size());
 				} catch (IOException e) {
 					AppendText("accept() error");
 					//System.exit(0);
@@ -162,10 +164,13 @@ public class YutGameServer extends JFrame {
 
 		private Socket client_socket;
 		private Vector user_vc;
+		public boolean userReady = false;
 		public String UserName = "";
 		public String imagepath = "";
-		public String UserStatus;
-
+		public int userIdx = -1;
+		public boolean isOwner = false;
+		public boolean isReady = false;
+		
 		public UserService(Socket client_socket) {
 			// TODO Auto-generated constructor stub
 			// 매개변수로 넘어온 자료 저장
@@ -181,34 +186,69 @@ public class YutGameServer extends JFrame {
 		}
 
 		public void Login() {
-			AppendText("새로운 참가자 " + UserName + " 입장.");
-			WriteOne("Welcome to Java chat server\n");
-			WriteOne(UserName + "님 환영합니다.\n"); // 연결된 사용자에게 정상접속을 알림
-			String msg = "[" + UserName + "]님이 입장 하였습니다.\n";
-			WriteOthers(msg); // 아직 user_vc에 새로 입장한 user는 포함되지 않았다.
+			int index = 0;
+			while(index < 4) {
+				if(userList[index].getIdx() == -1) break;
+				index+=1;
+			}
+			System.out.println("index: " + index);
+			if(index != 4) {
+				System.out.println("if문 안으로 들어옴");
+				userList[index].setIdx(index);
+				userList[index].setUsername(UserName);
+				userIdx = index;
+				System.out.println("userList[index]: " + userList[index].getIdx() + " " + userList[index].getUsername());
+				AppendText("새로운 참가자 " + UserName + " 입장.");
+				WriteOne("Welcome to Java chat server\n");
+				System.out.println("Welcom server 보냄");
+				WriteOne(UserName + "님 환영합니다.\n"); // 연결된 사용자에게 정상접속을 알림
+				SendUserIdx();
+				String msg = "[" + UserName + "]님이 입장 하였습니다.\n";
+				WriteOthers(msg); // 아직 user_vc에 새로 입장한 user는 포함되지 않았다.
+				StringBuilder data = new StringBuilder("");
+			    for(int i=0; i<4; i++) {
+			    	if(userList[i].getIdx() == -1) continue;
+			    	data.append("idx: ").append(userList[i].getIdx()).append(' ').append("name: ").append(userList[i].getUsername()).append(' ');
+			    }
+				for (int i = 0; i < UserVec.size(); i++) {
+					UserService user = (UserService) UserVec.elementAt(i);
+					System.out.println(data.toString());
+					user.SendUserList(data.toString());					
+				}
+			}
 		}
 
 		public void Logout() {
 			String msg = "[" + UserName + "]님이 퇴장 하였습니다.\n";
+			userList[this.userIdx].setIdx(-1);
 			UserVec.removeElement(this); // Logout한 현재 객체를 벡터에서 지운다
 			WriteAll(msg); // 나를 제외한 다른 User들에게 전송
 			this.client_socket = null;
 			AppendText("사용자 " + "[" + UserName + "] 퇴장. 현재 참가자 수 " + UserVec.size());
+			StringBuilder data = new StringBuilder("");
+			for(int i=0; i<4; i++) {
+		    	if(userList[i].getIdx() == -1) continue;
+		    	data.append("idx: ").append(userList[i].getIdx()).append(' ').append("name: ").append(userList[i].getUsername()).append(' ');
+		    }
+		    for (int i = 0; i < UserVec.size(); i++) {
+				UserService user = (UserService) UserVec.elementAt(i);
+				user.SendUserList(data.toString());
+			}
 		}
 
+		
 		// 모든 User들에게 방송. 각각의 UserService Thread의 WriteONe() 을 호출한다.
 		public void WriteAll(String str) {
 			for (int i = 0; i < user_vc.size(); i++) {
 				UserService user = (UserService) user_vc.elementAt(i);
-				if (user.UserStatus == "O")
 					user.WriteOne(str);
 			}
 		}
+		
 		// 모든 User들에게 Object를 방송. 채팅 message와 image object를 보낼 수 있다
 		public void WriteAllObject(ChatMsg obj) {
 			for (int i = 0; i < user_vc.size(); i++) {
 				UserService user = (UserService) user_vc.elementAt(i);
-				if (user.UserStatus == "O")
 					user.WriteChatMsg(obj);
 			}
 		}
@@ -217,7 +257,7 @@ public class YutGameServer extends JFrame {
 		public void WriteOthers(String str) {
 			for (int i = 0; i < user_vc.size(); i++) {
 				UserService user = (UserService) user_vc.elementAt(i);
-				if (user != this && user.UserStatus == "O")
+				if (user != this)
 					user.WriteOne(str);
 			}
 		}
@@ -240,9 +280,29 @@ public class YutGameServer extends JFrame {
 			return packet;
 		}
 
+		public void SendUserIdx() {
+			ChatMsg obcm = new ChatMsg("SERVER", "101", Integer.toString(userIdx));
+			WriteChatMsg(obcm);
+		}
+		
+		public void SendUserList(String msg) {
+			ChatMsg obcm = new ChatMsg("SERVER", "102", msg);
+			WriteChatMsg(obcm);
+		}
+		
+		public void SendUsersReady(String msg) {
+			
+			for(int i=0; i<user_vc.size(); i++) {
+				UserService user = (UserService)user_vc.elementAt(i);
+				ChatMsg obcm = new ChatMsg("SERVER", "103", msg);
+				user.WriteChatMsg(obcm);
+			}	
+		}
+		
 		// UserService Thread가 담당하는 Client 에게 1:1 전송
 		public void WriteOne(String msg) {
 			ChatMsg obcm = new ChatMsg("SERVER", "200", msg);
+			System.out.println("obcm: " + obcm.data);
 			WriteChatMsg(obcm);
 		}
 
@@ -257,10 +317,10 @@ public class YutGameServer extends JFrame {
 			    oos.writeObject(obj.code);
 			    oos.writeObject(obj.UserName);
 			    oos.writeObject(obj.data);
-			    if (obj.code.equals("300")) {
-				    oos.writeObject(obj.imgbytes);
-				    //oos.writeObject(obj.bimg);
-			    }
+//			    if (obj.code.equals("300")) {
+//				    oos.writeObject(obj.imgbytes);
+//				    //oos.writeObject(obj.bimg);
+//			    }
 			} 
 			catch (IOException e) {
 				AppendText("oos.writeObject(ob) error");		
@@ -324,14 +384,29 @@ public class YutGameServer extends JFrame {
 				AppendObject(cm);
 				if (cm.code.matches("100")) {
 					UserName = cm.UserName;
-					UserStatus = "O"; // Online 상태
+					System.out.println("100들어옴");
 					Login();
-				} else if (cm.code.matches("200")) {
+				}else if(cm.code.matches("103")) {
+					StringBuilder userReadyData = new StringBuilder("");
+					String[] datas = cm.data.split(" ");
+					for(int i=0; i<user_vc.size(); i++) {
+						UserService user = (UserService)user_vc.elementAt(i);
+						if(user.userIdx == Integer.parseInt(datas[0])) 
+							isReady = !isReady;
+						userReadyData.append(user.userIdx).append(' ').append(user.isReady).append(' ');
+					}
+					
+					for(int i=0; i<user_vc.size(); i++) {
+						UserService user = (UserService)user_vc.elementAt(i);
+						user.SendUsersReady(userReadyData.toString());
+					}
+					
+				}else if (cm.code.matches("200")) {
 					String msg = String.format("[%s] %s", cm.UserName, cm.data);
 					AppendText(msg); // server 화면에 출력
 					String[] args = msg.split(" "); // 단어들을 분리한다.
 					if (args.length == 1) { // Enter key 만 들어온 경우 Wakeup 처리만 한다.
-						UserStatus = "O";
+						//UserStatus = "O";
 					} else if (args[1].matches("/exit")) {
 						Logout();
 						break;
@@ -341,17 +416,13 @@ public class YutGameServer extends JFrame {
 						WriteOne("-----------------------------\n");
 						for (int i = 0; i < user_vc.size(); i++) {
 							UserService user = (UserService) user_vc.elementAt(i);
-							WriteOne(user.UserName + "\t" + user.UserStatus + "\n");
+							WriteOne(user.UserName + "\n");
 						}
 						WriteOne("-----------------------------\n");
-					} else if (args[1].matches("/sleep")) {
-						UserStatus = "S";
-					} else if (args[1].matches("/wakeup")) {
-						UserStatus = "O";
 					} else if (args[1].matches("/to")) { // 귓속말
 						for (int i = 0; i < user_vc.size(); i++) {
 							UserService user = (UserService) user_vc.elementAt(i);
-							if (user.UserName.matches(args[2]) && user.UserStatus.matches("O")) {
+							if (user.UserName.matches(args[2])) {
 								String msg2 = "";
 								for (int j = 3; j < args.length; j++) {// 실제 message 부분
 									msg2 += args[j];
@@ -365,7 +436,6 @@ public class YutGameServer extends JFrame {
 							}
 						}
 					} else { // 일반 채팅 메시지
-						UserStatus = "O";
 						//WriteAll(msg + "\n"); // Write All
 						WriteAllObject(cm);
 					}
