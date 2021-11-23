@@ -69,6 +69,8 @@ public class YutGameClientView extends JFrame {
 	private Frame frame;
 	private FileDialog fd;
 	private JButton imgBtn;
+	private JButton btnGameStart;
+	private JButton btnRollYut;
 
 	private Image mainBackground = new ImageIcon(YutGameClientView.class.getResource("images/bg_main.jpg")).getImage();
 	private Image yutBackground = new ImageIcon(YutGameClientView.class.getResource("images/bg_yut.png")).getImage();
@@ -80,52 +82,73 @@ public class YutGameClientView extends JFrame {
 	private ImageIcon character2 = new ImageIcon(YutGameClientView.class.getResource("images/character2.png"));
 	private ImageIcon character3 = new ImageIcon(YutGameClientView.class.getResource("images/character3.png"));
 	private ImageIcon character4 = new ImageIcon(YutGameClientView.class.getResource("images/character4.png"));
-	
-	
+
 	private ImageIcon gameStartImage = new ImageIcon(YutGameClientView.class.getResource("images/img_game_start.png"));
-	private ImageIcon gameStartHoverImage = new ImageIcon(YutGameClientView.class.getResource("images/img_game_start_hover.png"));
+	private ImageIcon gameStartHoverImage = new ImageIcon(
+			YutGameClientView.class.getResource("images/img_game_start_hover.png"));
 	private ImageIcon gameReadyImage = new ImageIcon(YutGameClientView.class.getResource("images/img_game_ready.png"));
-	private ImageIcon gameReadyHoverImage = new ImageIcon(YutGameClientView.class.getResource("images/img_game_ready_hover.png"));
-	private ImageIcon gameReadyFinishImage = new ImageIcon(YutGameClientView.class.getResource("images/img_game_ready_finish.png"));
-	private ImageIcon gameReadyFinishHoverImage = new ImageIcon(YutGameClientView.class.getResource("images/img_game_ready_finish_hover.png"));
+	private ImageIcon gameReadyHoverImage = new ImageIcon(
+			YutGameClientView.class.getResource("images/img_game_ready_hover.png"));
+	private ImageIcon gameReadyFinishImage = new ImageIcon(
+			YutGameClientView.class.getResource("images/img_game_ready_finish.png"));
+	private ImageIcon gameReadyFinishHoverImage = new ImageIcon(
+			YutGameClientView.class.getResource("images/img_game_ready_finish_hover.png"));
 	private ImageIcon userReadyImage = new ImageIcon(YutGameClientView.class.getResource("images/img_user_ready.png"));
 	private ImageIcon rollImage = new ImageIcon(YutGameClientView.class.getResource("images/img_roll.png"));
 	private ImageIcon rollHoverImage = new ImageIcon(YutGameClientView.class.getResource("images/img_roll_hover.png"));
 	private ImageIcon yutFrontImage = new ImageIcon(YutGameClientView.class.getResource("images/img_yut_front.png"));
 	private ImageIcon yutBackImage = new ImageIcon(YutGameClientView.class.getResource("images/img_yut_back.png"));
-	private ImageIcon yutSpecialImage = new ImageIcon(YutGameClientView.class.getResource("images/img_yut_special.png"));
-	
-	private ImageIcon img_gameStart = new ImageIcon(gameStartImage.getImage().getScaledInstance(280, 70,Image.SCALE_SMOOTH));
-	private ImageIcon img_gameStartHover = new ImageIcon(gameStartHoverImage.getImage().getScaledInstance(280, 70,Image.SCALE_SMOOTH));
-	private ImageIcon img_gameReady = new ImageIcon(gameReadyImage.getImage().getScaledInstance(280, 70,Image.SCALE_SMOOTH));
-	private ImageIcon img_gameReadyHover = new ImageIcon(gameReadyHoverImage.getImage().getScaledInstance(280, 70,Image.SCALE_SMOOTH));
-	private ImageIcon img_gameReadyFinish = new ImageIcon(gameReadyFinishImage.getImage().getScaledInstance(280, 70,Image.SCALE_SMOOTH));
-	private ImageIcon img_gameReadyFinishHover = new ImageIcon(gameReadyFinishHoverImage.getImage().getScaledInstance(280, 70,Image.SCALE_SMOOTH));
-	private ImageIcon img_userReady = new ImageIcon(userReadyImage.getImage().getScaledInstance(135, 30,Image.SCALE_SMOOTH));
-	
-	private ImageIcon img_roll = new ImageIcon(rollImage.getImage().getScaledInstance(280, 70,Image.SCALE_SMOOTH));
-	private ImageIcon img_rollHover = new ImageIcon(rollHoverImage.getImage().getScaledInstance(280, 70,Image.SCALE_SMOOTH));
-	private ImageIcon img_yutFront = new ImageIcon(yutFrontImage.getImage().getScaledInstance(70, 280,Image.SCALE_SMOOTH));
-	private ImageIcon img_yutBack = new ImageIcon(yutBackImage.getImage().getScaledInstance(70, 280,Image.SCALE_SMOOTH));
-	private ImageIcon img_yutSpecial = new ImageIcon(yutSpecialImage.getImage().getScaledInstance(70, 280,Image.SCALE_SMOOTH));
-	
+	private ImageIcon yutSpecialImage = new ImageIcon(
+			YutGameClientView.class.getResource("images/img_yut_special.png"));
+	private ImageIcon crownImage = new ImageIcon(YutGameClientView.class.getResource("images/img_crown.png"));
+
+	private ImageIcon img_gameStart = new ImageIcon(
+			gameStartImage.getImage().getScaledInstance(280, 70, Image.SCALE_SMOOTH));
+	private ImageIcon img_gameStartHover = new ImageIcon(
+			gameStartHoverImage.getImage().getScaledInstance(280, 70, Image.SCALE_SMOOTH));
+	private ImageIcon img_gameReady = new ImageIcon(
+			gameReadyImage.getImage().getScaledInstance(280, 70, Image.SCALE_SMOOTH));
+	private ImageIcon img_gameReadyHover = new ImageIcon(
+			gameReadyHoverImage.getImage().getScaledInstance(280, 70, Image.SCALE_SMOOTH));
+	private ImageIcon img_gameReadyFinish = new ImageIcon(
+			gameReadyFinishImage.getImage().getScaledInstance(280, 70, Image.SCALE_SMOOTH));
+	private ImageIcon img_gameReadyFinishHover = new ImageIcon(
+			gameReadyFinishHoverImage.getImage().getScaledInstance(280, 70, Image.SCALE_SMOOTH));
+	private ImageIcon img_userReady = new ImageIcon(
+			userReadyImage.getImage().getScaledInstance(135, 30, Image.SCALE_SMOOTH));
+
+	private ImageIcon img_crown = new ImageIcon(crownImage.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH));
+
+	private ImageIcon img_roll = new ImageIcon(rollImage.getImage().getScaledInstance(280, 70, Image.SCALE_SMOOTH));
+	private ImageIcon img_rollHover = new ImageIcon(
+			rollHoverImage.getImage().getScaledInstance(280, 70, Image.SCALE_SMOOTH));
+	private ImageIcon img_yutFront = new ImageIcon(
+			yutFrontImage.getImage().getScaledInstance(70, 280, Image.SCALE_SMOOTH));
+	private ImageIcon img_yutBack = new ImageIcon(
+			yutBackImage.getImage().getScaledInstance(70, 280, Image.SCALE_SMOOTH));
+	private ImageIcon img_yutSpecial = new ImageIcon(
+			yutSpecialImage.getImage().getScaledInstance(70, 280, Image.SCALE_SMOOTH));
+
 	private JPanel[] userPanel = new JPanel[4];
 	private JLabel[] userImageLabel = new JLabel[4];
 	private JLabel[] userObjectLabel = new JLabel[4];
 	private JLabel[] userObjectCntLabel = new JLabel[4];
 	private JLabel[] userNameText = new JLabel[4];
-	private int[] userObjectCnt = new int[]{4, 4, 4, 4};
+	private int[] userObjectCnt = new int[] { 4, 4, 4, 4 };
 	private JLabel[] yutObjectLabel = new JLabel[4];
 	private JLabel[] userReadyLabel = new JLabel[4];
-	
-	private int userIdx = 0;
-	private boolean[] yutList = new boolean[4];
+	private JLabel[] crownLabel = new JLabel[4];
+
+	private int userIdx = 3;
+	private int[] yutList = new int[4];
 	private UserData[] userList = new UserData[4];
-	private boolean isOwner = false;
+	private boolean Owner = true;
 	private boolean[] userReadyList = new boolean[4];
 	private boolean isRoll = false;
+
 	private boolean isPlaying = false;
-	
+	private ArrayList<Integer> rollResult = new ArrayList();
+
 	/**
 	 * Create the frame.
 	 */
@@ -194,23 +217,39 @@ public class YutGameClientView extends JFrame {
 		panel.setBounds(24, 10, 780, 650);
 		contentPane.add(panel);
 
-		for(int i=0; i<4; i++) {
+		for (int i = 0; i < 4; i++) {
 			userReadyLabel[i] = new JLabel();
 			userReadyLabel[i].setIcon(img_userReady);
-			if(i == 0) {
+			if (i == 0) {
 				userReadyLabel[i].setBounds(24, 800, 135, 30);
-			}else if(i == 1){
+			} else if (i == 1) {
 				userReadyLabel[i].setBounds(243, 800, 135, 30);
-			}else if(i == 2) {
+			} else if (i == 2) {
 				userReadyLabel[i].setBounds(457, 800, 135, 30);
-			}else {
+			} else {
 				userReadyLabel[i].setBounds(669, 800, 135, 30);
 			}
 			userReadyLabel[i].setVisible(userReadyList[i]);
 			contentPane.add(userReadyLabel[i]);
 		}
-		
-		for(int i=0; i<4; i++) {
+
+		for (int i = 0; i < 4; i++) {
+			crownLabel[i] = new JLabel();
+			crownLabel[i].setIcon(img_crown);
+			if (i == 0) {
+				crownLabel[i].setBounds(115, 810, 40, 40);
+			} else if (i == 1) {
+				crownLabel[i].setBounds(334, 810, 40, 40);
+			} else if (i == 2) {
+				crownLabel[i].setBounds(548, 810, 40, 40);
+			} else {
+				crownLabel[i].setBounds(760, 810, 40, 40);
+			}
+			crownLabel[i].setVisible(true);
+			contentPane.add(crownLabel[i]);
+		}
+
+		for (int i = 0; i < 4; i++) {
 			userList[i] = new UserData(-1, "");
 			userPanel[i] = new JPanel() {
 				public void paintComponent(Graphics g) {
@@ -222,51 +261,57 @@ public class YutGameClientView extends JFrame {
 			userImageLabel[i] = new JLabel();
 			userNameText[i] = new JLabel();
 			userObjectCntLabel[i] = new JLabel();
-			for(int j=0; j<4; j++) userObjectLabel[i] = new JLabel();
-			if(i == 0) {
+			for (int j = 0; j < 4; j++)
+				userObjectLabel[i] = new JLabel();
+			if (i == 0) {
 				userPanel[i].setBounds(24, 680, 135, 169);
 				userImageLabel[i].setBounds(28, 720, 80, 125);
-				userImageLabel[i].setIcon(new ImageIcon(character1.getImage().getScaledInstance(80,125,Image.SCALE_SMOOTH)));
+				userImageLabel[i]
+						.setIcon(new ImageIcon(character1.getImage().getScaledInstance(80, 125, Image.SCALE_SMOOTH)));
 				userNameText[i].setBounds(30, 685, 135, 20);
 				userNameText[i].setText("Username1");
 				userObjectLabel[i].setBounds(115, 705, 20, 30);
-				userObjectLabel[i].setIcon(new ImageIcon(character1.getImage().getScaledInstance(20,30,Image.SCALE_SMOOTH)));
+				userObjectLabel[i]
+						.setIcon(new ImageIcon(character1.getImage().getScaledInstance(20, 30, Image.SCALE_SMOOTH)));
 				userObjectCntLabel[i].setBounds(140, 710, 20, 20);
 				userObjectCntLabel[i].setText(Integer.toString(userObjectCnt[i]));
 				userObjectCntLabel[i].setFont(new Font("bold", Font.PLAIN, 30));
-			}
-			else if(i==1) {
+			} else if (i == 1) {
 				userPanel[i].setBounds(243, 680, 135, 169);
 				userImageLabel[i].setBounds(248, 720, 80, 125);
-				userImageLabel[i].setIcon(new ImageIcon(character2.getImage().getScaledInstance(80,125,Image.SCALE_SMOOTH)));
+				userImageLabel[i]
+						.setIcon(new ImageIcon(character2.getImage().getScaledInstance(80, 125, Image.SCALE_SMOOTH)));
 				userNameText[i].setBounds(254, 685, 135, 20);
 				userNameText[i].setText("Username2");
 				userObjectLabel[i].setBounds(334, 705, 20, 30);
-				userObjectLabel[i].setIcon(new ImageIcon(character2.getImage().getScaledInstance(20,30,Image.SCALE_SMOOTH)));
+				userObjectLabel[i]
+						.setIcon(new ImageIcon(character2.getImage().getScaledInstance(20, 30, Image.SCALE_SMOOTH)));
 				userObjectCntLabel[i].setBounds(359, 710, 20, 20);
 				userObjectCntLabel[i].setText(Integer.toString(userObjectCnt[i]));
 				userObjectCntLabel[i].setFont(new Font("bold", Font.PLAIN, 30));
-			}
-			else if(i==2) {
+			} else if (i == 2) {
 				userPanel[i].setBounds(458, 680, 135, 169);
 				userImageLabel[i].setBounds(462, 720, 80, 125);
-				userImageLabel[i].setIcon(new ImageIcon(character3.getImage().getScaledInstance(80,125,Image.SCALE_SMOOTH)));
+				userImageLabel[i]
+						.setIcon(new ImageIcon(character3.getImage().getScaledInstance(80, 125, Image.SCALE_SMOOTH)));
 				userNameText[i].setBounds(464, 685, 135, 20);
 				userNameText[i].setText("Username3");
 				userObjectLabel[i].setBounds(549, 705, 20, 30);
-				userObjectLabel[i].setIcon(new ImageIcon(character3.getImage().getScaledInstance(20,30,Image.SCALE_SMOOTH)));
+				userObjectLabel[i]
+						.setIcon(new ImageIcon(character3.getImage().getScaledInstance(20, 30, Image.SCALE_SMOOTH)));
 				userObjectCntLabel[i].setBounds(574, 710, 20, 20);
 				userObjectCntLabel[i].setText(Integer.toString(userObjectCnt[i]));
 				userObjectCntLabel[i].setFont(new Font("bold", Font.PLAIN, 30));
-			}
-			else { 
+			} else {
 				userPanel[i].setBounds(669, 680, 135, 169);
 				userImageLabel[i].setBounds(674, 720, 80, 125);
-				userImageLabel[i].setIcon(new ImageIcon(character4.getImage().getScaledInstance(80,125,Image.SCALE_SMOOTH)));
+				userImageLabel[i]
+						.setIcon(new ImageIcon(character4.getImage().getScaledInstance(80, 125, Image.SCALE_SMOOTH)));
 				userNameText[i].setBounds(676, 685, 135, 20);
 				userNameText[i].setText("Username4");
 				userObjectLabel[i].setBounds(760, 705, 20, 30);
-				userObjectLabel[i].setIcon(new ImageIcon(character4.getImage().getScaledInstance(20,30,Image.SCALE_SMOOTH)));
+				userObjectLabel[i]
+						.setIcon(new ImageIcon(character4.getImage().getScaledInstance(20, 30, Image.SCALE_SMOOTH)));
 				userObjectCntLabel[i].setBounds(785, 710, 20, 20);
 				userObjectCntLabel[i].setText(Integer.toString(userObjectCnt[i]));
 				userObjectCntLabel[i].setFont(new Font("bold", Font.PLAIN, 30));
@@ -281,10 +326,10 @@ public class YutGameClientView extends JFrame {
 			contentPane.add(userNameText[i]);
 			contentPane.add(userPanel[i]);
 		}
-		
-		for(int i=0; i<4; i++) {
+
+		for (int i = 0; i < 4; i++) {
 			yutObjectLabel[i] = new JLabel();
-			yutObjectLabel[i].setBounds(840+100*i, 60, 70, 280);
+			yutObjectLabel[i].setBounds(840 + 100 * i, 60, 70, 280);
 			yutObjectLabel[i].setIcon(img_yutBack);
 			contentPane.add(yutObjectLabel[i]);
 		}
@@ -337,8 +382,8 @@ public class YutGameClientView extends JFrame {
 		});
 		btnNewButton.setBounds(1183, 778, 69, 40);
 		contentPane.add(btnNewButton);
-		
-		JPanel yutPanel = new JPanel()  {
+
+		JPanel yutPanel = new JPanel() {
 			public void paintComponent(Graphics g) {
 				g.drawImage(yutBackground, 0, 0, null);
 				setOpaque(false);
@@ -347,138 +392,181 @@ public class YutGameClientView extends JFrame {
 		};
 		yutPanel.setBounds(829, 22, 423, 364);
 		contentPane.add(yutPanel);
-		
-		JButton btnGameStart;
-		if(isOwner) {
+
+		if (Owner) {
 			btnGameStart = new JButton(img_gameStart);
-		}else if(!userReadyList[userIdx]){
+		} else if (!userReadyList[userIdx]) {
 			btnGameStart = new JButton(img_gameReady);
-		}else {
+		} else {
 			btnGameStart = new JButton(img_gameReadyFinish);
 		}
-		
+
 		btnGameStart.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseEntered(MouseEvent e) {  //마우스가 올라갔을 때
-				if(isOwner) {
+			public void mouseEntered(MouseEvent e) { // 마우스가 올라갔을 때
+				if (Owner) {
 					btnGameStart.setIcon(img_gameStartHover);
-				}else if(!userReadyList[userIdx]) {
+				} else if (!userReadyList[userIdx]) {
 					btnGameStart.setIcon(img_gameReadyHover);
-				}else {
+				} else {
 					btnGameStart.setIcon(img_gameReadyFinishHover);
 				}
 				btnGameStart.setCursor(new Cursor(Cursor.HAND_CURSOR));
 			}
+
 			@Override
-			public void mousePressed(MouseEvent e) { //마우스가 눌렸을 때
-				if(isOwner) {
+			public void mousePressed(MouseEvent e) { // 마우스가 눌렸을 때
+				if (Owner) {
 					btnGameStart.setIcon(img_gameStartHover);
-				}else if(!userReadyList[userIdx]) {
+				} else if (!userReadyList[userIdx]) {
 					btnGameStart.setIcon(img_gameReadyHover);
-				}else {
+				} else {
 					btnGameStart.setIcon(img_gameReadyFinishHover);
 				}
 				btnGameStart.setCursor(new Cursor(Cursor.HAND_CURSOR));
 			}
-			
+
 			@Override
-			public void mouseClicked(MouseEvent e) { //마우스로 클릭했을 때
-				ChatMsg obcm = new ChatMsg(UserName, "103", userIdx+" readyChange"); // 로그인
-				SendChatMsg(obcm);
+			public void mouseClicked(MouseEvent e) { // 마우스로 클릭했을 때
+				System.out.println(userIdx+" Owner: " +Owner);
+				if (Owner) {
+					// gamestart
+					ChatMsg obcm = new ChatMsg(UserName, "104", userIdx + " IGameStart"); // 로그인
+					SendChatMsg(obcm);
+				} else {
+					ChatMsg obcm = new ChatMsg(UserName, "103", userIdx + " readyChange"); // 로그인
+					SendChatMsg(obcm);
+				}
 			}
-			
+
 			@Override
-			public void mouseExited(MouseEvent e) { //마우스가 나갔을 때 원상복귀
-				if(isOwner) {
+			public void mouseExited(MouseEvent e) { // 마우스가 나갔을 때 원상복귀
+				if (Owner) {
 					btnGameStart.setIcon(img_gameStart);
-				}else if(!userReadyList[userIdx]) {
+				} else if (!userReadyList[userIdx]) {
 					btnGameStart.setIcon(img_gameReady);
-				}else {
+				} else {
 					btnGameStart.setIcon(img_gameReadyFinish);
 				}
 				btnGameStart.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
-		
-		
+
 		btnGameStart.setBounds(890, 400, 280, 70);
-		btnGameStart.setBorderPainted(false); //버튼 테두리 설정
-		btnGameStart.setContentAreaFilled(false); //버튼 영역 배경 표시 설정
-		btnGameStart.setFocusPainted(false); //포커스 표시 설정
+		btnGameStart.setBorderPainted(false); // 버튼 테두리 설정
+		btnGameStart.setContentAreaFilled(false); // 버튼 영역 배경 표시 설정
+		btnGameStart.setFocusPainted(false); // 포커스 표시 설정
 		btnGameStart.setVisible(true);
 		contentPane.add(btnGameStart);
-		
+
 		Random random = new Random();
-	    
-		JButton btnRollYut = new JButton(img_roll);
+
+		btnRollYut = new JButton(img_roll);
 		btnRollYut.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseEntered(MouseEvent e) {  //마우스가 올라갔을 때
+			public void mouseEntered(MouseEvent e) { // 마우스가 올라갔을 때
 				btnRollYut.setIcon(img_rollHover);
 				btnRollYut.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
+
 			@Override
-			public void mousePressed(MouseEvent e) { //마우스가 눌렸을 때
+			public void mousePressed(MouseEvent e) { // 마우스가 눌렸을 때
 				btnRollYut.setIcon(img_rollHover);
 				btnRollYut.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
-			
+
 			@Override
-			public void mouseClicked(MouseEvent e) { //마우스로 클릭했을 때
+			public void mouseClicked(MouseEvent e) { // 마우스로 클릭했을 때
+				rollResult.clear();
+
 				random.setSeed(System.currentTimeMillis());
 				int special = random.nextInt(100);
 				int specialPos = random.nextInt(4);
-				
-				//yutList -> true = 앞면 / false = 뒷면
-				for(int i=0; i<4; i++) {
+
+				// yutList -> 1 = 앞면 / 0 = 뒷면
+				for (int i = 0; i < 4; i++) {
 					int num = random.nextInt(2);
-					if(num==0) yutList[i] = true;
-					else yutList[i] = false;
+					if (num == 0)
+						yutList[i] = 1;
+					else
+						yutList[i] = 0;
 				}
-				
-				for(int i=0; i<4; i++) {
-					if(yutList[i]) 
+
+				for (int i = 0; i < 4; i++) {
+					if (yutList[i] == 1)
 						yutObjectLabel[i].setIcon(img_yutFront);
 					else
 						yutObjectLabel[i].setIcon(img_yutBack);
 				}
-				
-				//false는 뒤집힌거기에 빽도적용
-				if(special < 25 && !yutList[specialPos]) 
+
+				boolean isHasBack = false;
+				// false는 뒤집힌거기에 빽도적용
+				if (special < 25 && yutList[specialPos] == 0) {
 					yutObjectLabel[specialPos].setIcon(img_yutSpecial);
-				
+					yutList[specialPos] = -1;
+					isHasBack = true;
+				}
+
+				int yutCnt = 0;
+				boolean hasBackShow = false;
+
+				for (int i = 0; i < 4; i++) {
+					if (yutList[i] != 1) {
+						yutCnt += 1;
+						if (yutList[i] == -1)
+							hasBackShow = true;
+					}
+				}
+				switch (yutCnt) {
+				case 1:
+					if (hasBackShow)
+						rollResult.add(-1);
+					else
+						rollResult.add(1);
+					break;
+				case 2:
+					rollResult.add(2);
+					break;
+				case 3:
+					rollResult.add(3);
+					break;
+				case 4:
+					rollResult.add(4);
+					break;
+				case 0:
+					rollResult.add(5);
+					break;
+				}
+
+				for (int i = 0; i < rollResult.size(); i++) {
+					System.out.print(rollResult.get(i) + " ");
+				}
+				System.out.println();
+
 				repaint();
 			}
-			
+
 			@Override
-			public void mouseExited(MouseEvent e) { //마우스가 나갔을 때 원상복귀
+			public void mouseExited(MouseEvent e) { // 마우스가 나갔을 때 원상복귀
 				btnRollYut.setIcon(img_roll);
 				btnRollYut.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
 		btnRollYut.setBounds(890, 400, 280, 70);
-		btnRollYut.setBorderPainted(false); //버튼 테두리 설정
-		btnRollYut.setContentAreaFilled(false); //버튼 영역 배경 표시 설정
-		btnRollYut.setFocusPainted(false); //포커스 표시 설정
+		btnRollYut.setBorderPainted(false); // 버튼 테두리 설정
+		btnRollYut.setContentAreaFilled(false); // 버튼 영역 배경 표시 설정
+		btnRollYut.setFocusPainted(false); // 포커스 표시 설정
 		btnRollYut.setVisible(false);
 		contentPane.add(btnRollYut);
-		
+
 		JCheckBox autoPlayCheck = new JCheckBox("Auto Play");
 		autoPlayCheck.setBounds(828, 487, 115, 23);
 		contentPane.add(autoPlayCheck);
-		
+
 		JButton btnRollBack = new JButton("RollBack");
 		btnRollBack.setBounds(1115, 487, 97, 23);
 		contentPane.add(btnRollBack);
-		
-		JButton btnNewButton_1 = new JButton("시작");
-		btnNewButton_1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			}
-		});
-		btnNewButton_1.setBounds(1080, 779, 91, 39);
-		contentPane.add(btnNewButton_1);
-		
+
 		try {
 			socket = new Socket(ip_addr, Integer.parseInt(port_no));
 
@@ -497,7 +585,7 @@ public class YutGameClientView extends JFrame {
 			txtInput.requestFocus();
 			ImageSendAction action2 = new ImageSendAction();
 			imgBtn.addActionListener(action2);
-			
+
 		} catch (NumberFormatException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -575,18 +663,22 @@ public class YutGameClientView extends JFrame {
 					repaint();
 					break;
 				case "102":
-					for(int i=0; i<4; i++) {
+					for (int i = 0; i < 4; i++) {
 						userNameText[i].setVisible(false);
 						userImageLabel[i].setVisible(false);
 						userObjectLabel[i].setVisible(false);
 						userObjectCntLabel[i].setVisible(false);
+						userReadyLabel[i].setVisible(false);
+						crownLabel[i].setVisible(false);
 					}
-					
-					System.out.println(cm.code + " " + cm.UserName + " " + cm.data);
-					String[] userListData = cm.data.split(" ");
-					for(int i=0; i<userListData.length; i+=4) {
-						int idx = Integer.parseInt(userListData[i+1]);
-						String name = userListData[i+3];
+					Owner = false;
+
+					String[] userInfoData = cm.data.split(" ");
+					for (int i = 0; i < userInfoData.length; i += 4) {
+						int idx = Integer.parseInt(userInfoData[i]);
+						String name = userInfoData[i + 1];
+						boolean isOwner = Boolean.parseBoolean(userInfoData[i + 2]);
+						boolean isReady = Boolean.parseBoolean(userInfoData[i + 3]);
 						userList[idx].setIdx(idx);
 						userList[idx].setUsername(name);
 						userNameText[idx].setText(name);
@@ -594,20 +686,30 @@ public class YutGameClientView extends JFrame {
 						userImageLabel[idx].setVisible(true);
 						userObjectLabel[idx].setVisible(true);
 						userObjectCntLabel[idx].setVisible(true);
+						userReadyLabel[idx].setVisible(isReady);
+						crownLabel[idx].setVisible(isOwner);
+						if (userIdx == idx && isOwner)
+							Owner = true;
 					}
-					
+
 					repaint();
 					break;
-				case "103":
-					System.out.println(cm.code + " " + cm.UserName + " " + cm.data);
-					String[] userReadyData = cm.data.split(" ");
-					for(int i=0; i<userReadyData.length; i+=2) {
-						int userReadyIdx = Integer.parseInt(userReadyData[i]);
-						boolean isReady = Boolean.parseBoolean(userReadyData[i+1]);
-						userReadyList[userReadyIdx] = isReady;
-						userReadyLabel[userReadyIdx].setVisible(isReady);
+				case "105":
+					String[] serverGameStartResponse = cm.data.split(" ");
+					boolean serverGameStartAccept = Boolean.parseBoolean(serverGameStartResponse[0]);
+					if(serverGameStartAccept) {
+						AppendText("☆☆☆☆☆ 게임을 시작합니다 ☆☆☆☆☆");
+						btnGameStart.setVisible(false);
+						btnRollYut.setVisible(true);
+						for(int i=0; i<4; i++) 
+							userReadyLabel[i].setVisible(false);
+						
+					}else {
+						if(serverGameStartResponse[1].equals("NoUser"))
+							AppendText("아직 유저가 아무도 없습니다.");
+						else
+							AppendText("모든 유저들이 아직 준비를 하지 않았습니다");
 					}
-					repaint();
 					break;
 				case "200": // chat message
 					String msg;
@@ -804,4 +906,5 @@ public class YutGameClientView extends JFrame {
 			// System.exit(0);
 		}
 	}
+
 }
