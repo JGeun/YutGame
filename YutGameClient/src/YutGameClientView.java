@@ -145,9 +145,9 @@ public class YutGameClientView extends JFrame {
 	private boolean Owner = true;
 	private boolean[] userReadyList = new boolean[4];
 	private boolean isRoll = false;
-
+	private String rollUserName = "";
 	private boolean isPlaying = false;
-	private ArrayList<Integer> rollResult = new ArrayList();
+	private int playTurnIdx = 0;
 
 	/**
 	 * Create the frame.
@@ -477,73 +477,60 @@ public class YutGameClientView extends JFrame {
 
 			@Override
 			public void mouseClicked(MouseEvent e) { // 마우스로 클릭했을 때
-				rollResult.clear();
+				if(userIdx != playTurnIdx) {
+					AppendText("아직 플레이어님의 턴이 아닙니다");
+				}else {
+					if(!isRoll) {
+						random.setSeed(System.currentTimeMillis());
+						int special = random.nextInt(100);
+						int specialPos = random.nextInt(4);
 
-				random.setSeed(System.currentTimeMillis());
-				int special = random.nextInt(100);
-				int specialPos = random.nextInt(4);
+						// yutList -> 1 = 앞면 / 0 = 뒷면
+						for (int i = 0; i < 4; i++) {
+							int num = random.nextInt(2);
+							if (num == 0)
+								yutList[i] = 1;
+							else
+								yutList[i] = 0;
+						}
 
-				// yutList -> 1 = 앞면 / 0 = 뒷면
-				for (int i = 0; i < 4; i++) {
-					int num = random.nextInt(2);
-					if (num == 0)
-						yutList[i] = 1;
-					else
-						yutList[i] = 0;
-				}
+						for (int i = 0; i < 4; i++) {
+							if (yutList[i] == 1)
+								yutObjectLabel[i].setIcon(img_yutFront);
+							else
+								yutObjectLabel[i].setIcon(img_yutBack);
+						}
 
-				for (int i = 0; i < 4; i++) {
-					if (yutList[i] == 1)
-						yutObjectLabel[i].setIcon(img_yutFront);
-					else
-						yutObjectLabel[i].setIcon(img_yutBack);
-				}
+						boolean isHasBack = false;
+						// false는 뒤집힌거기에 빽도적용
+						if (special < 25 && yutList[specialPos] == 0) {
+							yutObjectLabel[specialPos].setIcon(img_yutSpecial);
+							yutList[specialPos] = -1;
+							isHasBack = true;
+						}
 
-				boolean isHasBack = false;
-				// false는 뒤집힌거기에 빽도적용
-				if (special < 25 && yutList[specialPos] == 0) {
-					yutObjectLabel[specialPos].setIcon(img_yutSpecial);
-					yutList[specialPos] = -1;
-					isHasBack = true;
-				}
-
-				int yutCnt = 0;
-				boolean hasBackShow = false;
-
-				for (int i = 0; i < 4; i++) {
-					if (yutList[i] != 1) {
-						yutCnt += 1;
-						if (yutList[i] == -1)
-							hasBackShow = true;
+						StringBuilder yutRollResult = new StringBuilder("");
+						for (int i = 0; i < 4; i++) {
+							if (yutList[i] != 1) {
+								if (yutList[i] == -1) {
+									yutRollResult.append(-1).append(' ');
+								}else {
+									yutRollResult.append(0).append(' ');
+								}
+							}else {
+								yutRollResult.append(1).append(' ');
+							}
+						}
+						
+						isRoll = true;
+						ChatMsg obcm = new ChatMsg(UserName, "501", yutRollResult.toString()); // 로그인
+						SendChatMsg(obcm);
+						
+						repaint();
+					}else {
+						AppendText("잠시만 기다려주세요~");
 					}
 				}
-				switch (yutCnt) {
-				case 1:
-					if (hasBackShow)
-						rollResult.add(-1);
-					else
-						rollResult.add(1);
-					break;
-				case 2:
-					rollResult.add(2);
-					break;
-				case 3:
-					rollResult.add(3);
-					break;
-				case 4:
-					rollResult.add(4);
-					break;
-				case 0:
-					rollResult.add(5);
-					break;
-				}
-
-				for (int i = 0; i < rollResult.size(); i++) {
-					System.out.print(rollResult.get(i) + " ");
-				}
-				System.out.println();
-
-				repaint();
 			}
 
 			@Override
@@ -679,6 +666,7 @@ public class YutGameClientView extends JFrame {
 						String name = userInfoData[i + 1];
 						boolean isOwner = Boolean.parseBoolean(userInfoData[i + 2]);
 						boolean isReady = Boolean.parseBoolean(userInfoData[i + 3]);
+						System.out.println("isOwner: " + isOwner);
 						userList[idx].setIdx(idx);
 						userList[idx].setUsername(name);
 						userNameText[idx].setText(name);
@@ -692,6 +680,14 @@ public class YutGameClientView extends JFrame {
 							Owner = true;
 					}
 
+					if (Owner) {
+						btnGameStart.setIcon(img_gameStart);
+					} else if (!userReadyList[userIdx]) {
+						btnGameStart.setIcon(img_gameReady);
+					} else {
+						btnGameStart.setIcon(img_gameReadyFinish);
+					}
+					
 					repaint();
 					break;
 				case "105":
@@ -724,6 +720,43 @@ public class YutGameClientView extends JFrame {
 					break;
 				case "400":
 					System.out.println(cm.code + " " + cm.UserName + " " + cm.data);
+					break;
+				case "500":
+					System.out.println("턴체인지");
+					isRoll = false;
+					String[] userTurn = cm.data.split(" ");
+					System.out.println(userTurn[0]+"이 윷을 던짐");
+					rollUserName = userTurn[0];
+					playTurnIdx = Integer.parseInt(userTurn[1]);
+					if(userTurn[2].equals("true")) AppendText(userTurn[0]+"의 차례입니다!!!!");
+					repaint();
+					break;
+				case "501":
+					System.out.println("rollResult: " + cm.data+" rollUserName: " + rollUserName);
+					String[] yutRollResult = cm.data.split(" ");
+					for(int i=0; i<4; i++) {
+						int yut = Integer.parseInt(yutRollResult[i]);
+						if(yut == 1) {
+							yutObjectLabel[i].setIcon(img_yutFront);
+						}else if(yut == 0) {
+							yutObjectLabel[i].setIcon(img_yutBack);
+						}else {
+							yutObjectLabel[i].setIcon(img_yutSpecial);
+						}
+					}
+					
+					int yutRollValue = Integer.parseInt(yutRollResult[4]);
+					if(yutRollValue == -1) AppendText(rollUserName+"=>◇◇◇빽도◇◇◇");
+					else if(yutRollValue == 1) AppendText(rollUserName+"=>◇◇◇도◇◇◇");
+					else if(yutRollValue == 2) AppendText(rollUserName+"=>◇◇◇개◇◇◇");
+					else if(yutRollValue == 3) AppendText(rollUserName+"=>◇◇◇걸◇◇◇");
+					else if(yutRollValue == 4) AppendText(rollUserName+"=>◇◇◇◇윷◇◇◇◇");
+					else if(yutRollValue == 5) AppendText(rollUserName+"=>◇◇◇◇모◇◇◇◇");
+					
+					repaint();
+					break;
+				case "502":
+					isRoll = false;
 					break;
 				}
 			}
