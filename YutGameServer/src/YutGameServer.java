@@ -43,7 +43,7 @@ public class YutGameServer extends JFrame {
 	private static final int BUF_LEN = 128; // Windows 처럼 BUF_LEN 을 정의
 	private boolean[] userConnect = new boolean[4];
 	private int playTurnIdx = 0;
-	private List<Integer> rollResultList = new ArrayList();
+	
 	/**
 	 * Launch the application.
 	 */
@@ -167,7 +167,9 @@ public class YutGameServer extends JFrame {
 		public int userIdx = -1;
 		public boolean isOwner = false;
 		public boolean isReady = false;
-
+		private int userSelectObjCnt = 0;
+		private List<Integer> rollResultList = new ArrayList();
+		
 		public UserService(Socket client_socket) {
 			// TODO Auto-generated constructor stub
 			// 매개변수로 넘어온 자료 저장
@@ -271,12 +273,14 @@ public class YutGameServer extends JFrame {
 		}
 
 		public void SendUserInfo() {
+			System.out.println("SendUserIfno" + UserVec.size());
 			StringBuilder data = new StringBuilder("");
 			for (int i = 0; i < UserVec.size(); i++) {
 				UserService user = (UserService) UserVec.elementAt(i);
 				data.append(user.userIdx).append(' ').append(user.UserName).append(' ').append(user.isOwner).append(' ')
 						.append(user.isReady).append(' ');
 			}
+			
 			for (int i = 0; i < UserVec.size(); i++) {
 				UserService user = (UserService) UserVec.elementAt(i);
 				ChatMsg obcm = new ChatMsg("SERVER", "102", data.toString());
@@ -484,6 +488,7 @@ public class YutGameServer extends JFrame {
 						break;
 					}
 					
+					rollResultList.add(yutRollValue);
 					
 					ChatMsg obcm = new ChatMsg("SERVER", "501", cm.data + yutRollValue);
 					for (int i = 0; i < UserVec.size(); i++){
@@ -498,6 +503,24 @@ public class YutGameServer extends JFrame {
 							user.WriteChatMsg(obcm);
 						}
 					}else {
+						StringBuilder sb = new StringBuilder("");
+						for(int i=0; i<rollResultList.size(); i++) sb.append(rollResultList.get(i)).append(' ');
+						obcm = new ChatMsg("SERVER", "503", sb.toString());
+						for (int i = 0; i < UserVec.size(); i++) {
+							UserService user = (UserService) UserVec.elementAt(i);
+							user.WriteChatMsg(obcm);
+						}
+					}			
+				}else if(cm.code.matches("504")) {
+					this.userSelectObjCnt+=1;
+					System.out.println("UserSelectObjCnt: " + this.userSelectObjCnt +" size: " + rollResultList.size());
+					if(userSelectObjCnt == rollResultList.size()) {
+						System.out.println("-------------------------------------");
+						System.out.println("Cnt == Size");
+						this.userSelectObjCnt = 0;
+						this.rollResultList.clear();
+						System.out.println("초기화 userCnt: " + userSelectObjCnt + " size: "+rollResultList.size());
+						System.out.println("-------------------------------------");
 						playTurnIdx += 1;
 						int turn = playTurnIdx%UserVec.size();
 						String nextUserName = "";
@@ -509,9 +532,8 @@ public class YutGameServer extends JFrame {
 							}
 						}
 						
-						//TODO 나중에 바꿔야합니다.
+						ChatMsg obcm = new ChatMsg("SERVER", "500",  nextUserName + " " +turn + " false");
 						for (int i = 0; i < UserVec.size(); i++) {
-							obcm = new ChatMsg("SERVER", "500",  nextUserName + " " +turn + " false");
 							UserService user = (UserService) UserVec.elementAt(i);
 							user.WriteChatMsg(obcm);
 						}

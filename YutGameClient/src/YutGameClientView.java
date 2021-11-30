@@ -75,9 +75,10 @@ public class YutGameClientView extends JFrame {
 	private Image mainBackground = new ImageIcon(YutGameClientView.class.getResource("images/bg_main.jpg")).getImage();
 	private Image yutBackground = new ImageIcon(YutGameClientView.class.getResource("images/bg_yut.png")).getImage();
 	private Image background = new ImageIcon(YutGameClientView.class.getResource("images/bg_gamepanel.jpg")).getImage();
-	private ImageIcon gameSmallSpot = new ImageIcon(
+	private ImageIcon imgGameSmallSpot = new ImageIcon(
 			YutGameClientView.class.getResource("images/ic_game_small_spot.png"));
-	private ImageIcon gameBigSpot = new ImageIcon(YutGameClientView.class.getResource("images/ic_game_big_spot.png"));
+	private ImageIcon imgGameBigSpot = new ImageIcon(
+			YutGameClientView.class.getResource("images/ic_game_big_spot.png"));
 	private ImageIcon character1 = new ImageIcon(YutGameClientView.class.getResource("images/character1.png"));
 	private ImageIcon character2 = new ImageIcon(YutGameClientView.class.getResource("images/character2.png"));
 	private ImageIcon character3 = new ImageIcon(YutGameClientView.class.getResource("images/character3.png"));
@@ -101,6 +102,12 @@ public class YutGameClientView extends JFrame {
 	private ImageIcon yutSpecialImage = new ImageIcon(
 			YutGameClientView.class.getResource("images/img_yut_special.png"));
 	private ImageIcon crownImage = new ImageIcon(YutGameClientView.class.getResource("images/img_crown.png"));
+	private ImageIcon arrowImage = new ImageIcon(YutGameClientView.class.getResource("images/img_arrow.png"));
+
+	private ImageIcon gameSmallSpot = new ImageIcon(
+			imgGameSmallSpot.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
+	private ImageIcon gameBigSpot = new ImageIcon(
+			imgGameBigSpot.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH));
 
 	private ImageIcon img_gameStart = new ImageIcon(
 			gameStartImage.getImage().getScaledInstance(280, 70, Image.SCALE_SMOOTH));
@@ -118,7 +125,7 @@ public class YutGameClientView extends JFrame {
 			userReadyImage.getImage().getScaledInstance(135, 30, Image.SCALE_SMOOTH));
 
 	private ImageIcon img_crown = new ImageIcon(crownImage.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH));
-
+	private ImageIcon img_arrow = new ImageIcon(arrowImage.getImage().getScaledInstance(20, 30, Image.SCALE_SMOOTH));
 	private ImageIcon img_roll = new ImageIcon(rollImage.getImage().getScaledInstance(280, 70, Image.SCALE_SMOOTH));
 	private ImageIcon img_rollHover = new ImageIcon(
 			rollHoverImage.getImage().getScaledInstance(280, 70, Image.SCALE_SMOOTH));
@@ -129,15 +136,19 @@ public class YutGameClientView extends JFrame {
 	private ImageIcon img_yutSpecial = new ImageIcon(
 			yutSpecialImage.getImage().getScaledInstance(70, 280, Image.SCALE_SMOOTH));
 
+	private JLabel[] gameSpot = new JLabel[29];
+
 	private JPanel[] userPanel = new JPanel[4];
 	private JLabel[] userImageLabel = new JLabel[4];
 	private JLabel[] userObjectLabel = new JLabel[4];
+
 	private JLabel[] userObjectCntLabel = new JLabel[4];
 	private JLabel[] userNameText = new JLabel[4];
 	private int[] userObjectCnt = new int[] { 4, 4, 4, 4 };
 	private JLabel[] yutObjectLabel = new JLabel[4];
 	private JLabel[] userReadyLabel = new JLabel[4];
 	private JLabel[] crownLabel = new JLabel[4];
+	private JLabel[] arrowLabel = new JLabel[4];
 
 	private int userIdx = 3;
 	private int[] yutList = new int[4];
@@ -148,6 +159,17 @@ public class YutGameClientView extends JFrame {
 	private String rollUserName = "";
 	private boolean isPlaying = false;
 	private int playTurnIdx = 0;
+	private JLabel[] userGameObject = new JLabel[4];
+	private List<GameObject> gameObjectList = new ArrayList();
+
+	private int[][] spotPos = new int[][] { { 670, 450, 60, 60, 0 }, { 670, 350, 60, 60, 0 }, { 670, 250, 60, 60, 0 },
+			{ 670, 150, 60, 60, 0 }, { 660, 30, 80, 80, 1 }, { 540, 40, 60, 60, 0 }, { 420, 40, 60, 60, 0 },
+			{ 300, 40, 60, 60, 0 }, { 180, 40, 60, 60, 0 }, { 40, 30, 80, 80, 1 }, { 50, 150, 60, 60, 0 },
+			{ 50, 250, 60, 60, 0 }, { 50, 350, 60, 60, 0 }, { 50, 450, 60, 60, 0 }, { 40, 550, 80, 80, 1 },
+			{ 180, 560, 60, 60, 0 }, { 300, 560, 60, 60, 0 }, { 420, 560, 60, 60, 0 }, { 540, 560, 60, 60, 0 },
+			{ 660, 550, 80, 80, 1 }, { 170, 140, 60, 60, 0 }, { 260, 210, 60, 60, 0 }, { 350, 280, 80, 80, 1 },
+			{ 460, 370, 60, 60, 0 }, { 550, 450, 60, 60, 0 }, { 550, 140, 60, 60, 0 }, { 460, 210, 60, 60, 0 },
+			{ 260, 370, 60, 60, 0 }, { 170, 450, 60, 60, 0 }, };
 
 	/**
 	 * Create the frame.
@@ -167,49 +189,30 @@ public class YutGameClientView extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 
+		for (int i = 0; i < 4; i++) {
+			userGameObject[i] = new JLabel();
+			contentPane.add(userGameObject[i]);
+		}
+
+		for (int i = 0; i < 29; i++) {
+			gameSpot[i] = new JLabel();
+			gameSpot[i].setBounds(spotPos[i][0], spotPos[i][1], spotPos[i][2], spotPos[i][3]);
+			if (spotPos[i][4] == 1)
+				gameSpot[i].setIcon(gameBigSpot);
+			else
+				gameSpot[i].setIcon(gameSmallSpot);
+			gameSpot[i].addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) { // 마우스로 클릭했을 때
+
+				}
+			});
+			contentPane.add(gameSpot[i]);
+		}
+
 		JPanel panel = new JPanel() {
 			public void paintComponent(Graphics g) {
 				g.drawImage(background, 0, 0, null);
-				// 위
-				g.drawImage(gameBigSpot.getImage(), 40, 30, 80, 80, this);
-				g.drawImage(gameSmallSpot.getImage(), 180, 40, 60, 60, this);
-				g.drawImage(gameSmallSpot.getImage(), 300, 40, 60, 60, this);
-				g.drawImage(gameSmallSpot.getImage(), 420, 40, 60, 60, this);
-				g.drawImage(gameSmallSpot.getImage(), 540, 40, 60, 60, this);
-				g.drawImage(gameBigSpot.getImage(), 660, 30, 80, 80, this);
-
-				// 왼쪽
-				g.drawImage(gameSmallSpot.getImage(), 50, 150, 60, 60, this);
-				g.drawImage(gameSmallSpot.getImage(), 50, 250, 60, 60, this);
-				g.drawImage(gameSmallSpot.getImage(), 50, 350, 60, 60, this);
-				g.drawImage(gameSmallSpot.getImage(), 50, 450, 60, 60, this);
-				g.drawImage(gameBigSpot.getImage(), 40, 550, 80, 80, this);
-
-				// 아래
-				g.drawImage(gameSmallSpot.getImage(), 180, 560, 60, 60, this);
-				g.drawImage(gameSmallSpot.getImage(), 300, 560, 60, 60, this);
-				g.drawImage(gameSmallSpot.getImage(), 420, 560, 60, 60, this);
-				g.drawImage(gameSmallSpot.getImage(), 540, 560, 60, 60, this);
-				g.drawImage(gameBigSpot.getImage(), 660, 550, 80, 80, this);
-
-				// 오른쪽
-				g.drawImage(gameSmallSpot.getImage(), 670, 150, 60, 60, this);
-				g.drawImage(gameSmallSpot.getImage(), 670, 250, 60, 60, this);
-				g.drawImage(gameSmallSpot.getImage(), 670, 350, 60, 60, this);
-				g.drawImage(gameSmallSpot.getImage(), 670, 450, 60, 60, this);
-
-				// 대각선 왼쪽 -> 오른쪽
-				g.drawImage(gameSmallSpot.getImage(), 170, 140, 60, 60, this);
-				g.drawImage(gameSmallSpot.getImage(), 260, 210, 60, 60, this);
-				g.drawImage(gameBigSpot.getImage(), 350, 280, 80, 80, this);
-				g.drawImage(gameSmallSpot.getImage(), 460, 370, 60, 60, this);
-				g.drawImage(gameSmallSpot.getImage(), 550, 450, 60, 60, this);
-
-				// 대각선 오른쪽 -> 왼쪽
-				g.drawImage(gameSmallSpot.getImage(), 550, 140, 60, 60, this);
-				g.drawImage(gameSmallSpot.getImage(), 460, 210, 60, 60, this);
-				g.drawImage(gameSmallSpot.getImage(), 260, 370, 60, 60, this);
-				g.drawImage(gameSmallSpot.getImage(), 170, 450, 60, 60, this);
 				setOpaque(false);
 				super.paintComponent(g);
 			}
@@ -428,7 +431,7 @@ public class YutGameClientView extends JFrame {
 
 			@Override
 			public void mouseClicked(MouseEvent e) { // 마우스로 클릭했을 때
-				System.out.println(userIdx+" Owner: " +Owner);
+				System.out.println(userIdx + " Owner: " + Owner);
 				if (Owner) {
 					// gamestart
 					ChatMsg obcm = new ChatMsg(UserName, "104", userIdx + " IGameStart"); // 로그인
@@ -477,10 +480,10 @@ public class YutGameClientView extends JFrame {
 
 			@Override
 			public void mouseClicked(MouseEvent e) { // 마우스로 클릭했을 때
-				if(userIdx != playTurnIdx) {
+				if (userIdx != playTurnIdx) {
 					AppendText("아직 플레이어님의 턴이 아닙니다");
-				}else {
-					if(!isRoll) {
+				} else {
+					if (!isRoll) {
 						random.setSeed(System.currentTimeMillis());
 						int special = random.nextInt(100);
 						int specialPos = random.nextInt(4);
@@ -514,20 +517,20 @@ public class YutGameClientView extends JFrame {
 							if (yutList[i] != 1) {
 								if (yutList[i] == -1) {
 									yutRollResult.append(-1).append(' ');
-								}else {
+								} else {
 									yutRollResult.append(0).append(' ');
 								}
-							}else {
+							} else {
 								yutRollResult.append(1).append(' ');
 							}
 						}
-						
+
 						isRoll = true;
 						ChatMsg obcm = new ChatMsg(UserName, "501", yutRollResult.toString()); // 로그인
 						SendChatMsg(obcm);
-						
+
 						repaint();
-					}else {
+					} else {
 						AppendText("잠시만 기다려주세요~");
 					}
 				}
@@ -687,21 +690,21 @@ public class YutGameClientView extends JFrame {
 					} else {
 						btnGameStart.setIcon(img_gameReadyFinish);
 					}
-					
+
 					repaint();
 					break;
 				case "105":
 					String[] serverGameStartResponse = cm.data.split(" ");
 					boolean serverGameStartAccept = Boolean.parseBoolean(serverGameStartResponse[0]);
-					if(serverGameStartAccept) {
+					if (serverGameStartAccept) {
 						AppendText("☆☆☆☆☆ 게임을 시작합니다 ☆☆☆☆☆");
 						btnGameStart.setVisible(false);
 						btnRollYut.setVisible(true);
-						for(int i=0; i<4; i++) 
+						for (int i = 0; i < 4; i++)
 							userReadyLabel[i].setVisible(false);
-						
-					}else {
-						if(serverGameStartResponse[1].equals("NoUser"))
+
+					} else {
+						if (serverGameStartResponse[1].equals("NoUser"))
 							AppendText("아직 유저가 아무도 없습니다.");
 						else
 							AppendText("모든 유저들이 아직 준비를 하지 않았습니다");
@@ -725,45 +728,79 @@ public class YutGameClientView extends JFrame {
 					System.out.println("턴체인지");
 					isRoll = false;
 					String[] userTurn = cm.data.split(" ");
-					System.out.println(userTurn[0]+"이 윷을 던짐");
+					System.out.println(userTurn[0] + "이 윷을 던짐");
 					rollUserName = userTurn[0];
 					playTurnIdx = Integer.parseInt(userTurn[1]);
-					if(userTurn[2].equals("true")) AppendText(userTurn[0]+"의 차례입니다!!!!");
+					if (userTurn[2].equals("true"))
+						AppendText(userTurn[0] + "의 차례입니다!!!!");
 					repaint();
 					break;
 				case "501":
-					System.out.println("rollResult: " + cm.data+" rollUserName: " + rollUserName);
+					System.out.println("rollResult: " + cm.data + " rollUserName: " + rollUserName);
 					String[] yutRollResult = cm.data.split(" ");
-					for(int i=0; i<4; i++) {
+					for (int i = 0; i < 4; i++) {
 						int yut = Integer.parseInt(yutRollResult[i]);
-						if(yut == 1) {
+						if (yut == 1) {
 							yutObjectLabel[i].setIcon(img_yutFront);
-						}else if(yut == 0) {
+						} else if (yut == 0) {
 							yutObjectLabel[i].setIcon(img_yutBack);
-						}else {
+						} else {
 							yutObjectLabel[i].setIcon(img_yutSpecial);
 						}
 					}
-					
+
 					int yutRollValue = Integer.parseInt(yutRollResult[4]);
-					if(yutRollValue == -1) AppendText(rollUserName+"=>◇◇◇빽도◇◇◇");
-					else if(yutRollValue == 1) AppendText(rollUserName+"=>◇◇◇도◇◇◇");
-					else if(yutRollValue == 2) AppendText(rollUserName+"=>◇◇◇개◇◇◇");
-					else if(yutRollValue == 3) AppendText(rollUserName+"=>◇◇◇걸◇◇◇");
-					else if(yutRollValue == 4) AppendText(rollUserName+"=>◇◇◇◇윷◇◇◇◇");
-					else if(yutRollValue == 5) AppendText(rollUserName+"=>◇◇◇◇모◇◇◇◇");
-					
+					if (yutRollValue == -1)
+						AppendText(rollUserName + "=>◇◇◇빽도◇◇◇");
+					else if (yutRollValue == 1)
+						AppendText(rollUserName + "=>◇◇◇도◇◇◇");
+					else if (yutRollValue == 2)
+						AppendText(rollUserName + "=>◇◇◇개◇◇◇");
+					else if (yutRollValue == 3)
+						AppendText(rollUserName + "=>◇◇◇걸◇◇◇");
+					else if (yutRollValue == 4)
+						AppendText(rollUserName + "=>◇◇◇◇윷◇◇◇◇");
+					else if (yutRollValue == 5)
+						AppendText(rollUserName + "=>◇◇◇◇모◇◇◇◇");
+
 					repaint();
 					break;
 				case "502":
 					isRoll = false;
+					break;
+				case "503":
+					System.out.println("캐릭터 선택하면 됨");
+					int objectIdx = gameObjectList.size() + 1;
+					gameObjectList.add(new GameObject(objectIdx, 3, userIdx));
+					userGameObject[objectIdx].setName(Integer.toString(objectIdx));
+					userGameObject[objectIdx].addMouseListener(new MouseAdapter() {
+						@Override
+						public void mouseClicked(MouseEvent e) { // 마우스로 클릭했을 때
+							System.out.println(((JLabel) e.getSource()).getName());
+						}
+					});
+//
+					if (userIdx == 0)
+						userGameObject[objectIdx].setIcon(
+								new ImageIcon(character1.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
+					else if (userIdx == 1)
+						userGameObject[objectIdx].setIcon(
+								new ImageIcon(character2.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
+					else if (userIdx == 2)
+						userGameObject[objectIdx].setIcon(
+								new ImageIcon(character3.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
+					else if (userIdx == 3)
+						userGameObject[objectIdx].setIcon(
+								new ImageIcon(character4.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
+					userGameObject[objectIdx].setBounds(spotPos[0][0] + 12, spotPos[0][1], spotPos[0][2], spotPos[0][3]);
+
 					break;
 				}
 			}
 		}
 	}
 
-	// keyboard enter key 치면 서버로 전송
+// keyboard enter key 치면 서버로 전송
 	class TextSendAction implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
