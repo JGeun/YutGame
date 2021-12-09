@@ -165,6 +165,8 @@ public class YutGameServer extends JFrame {
 		public String UserName = "";
 		public String imagepath = "";
 		public int userIdx = -1;
+		public int[] userGameObjectPos = new int[] {-1, -1, -1, -1};
+		public int restObjectCnt = 4;
 		public boolean isOwner = false;
 		public boolean isReady = false;
 		private int userSelectObjCnt = 0;
@@ -199,9 +201,7 @@ public class YutGameServer extends JFrame {
 				userConnect[index] = true;
 				userIdx = index;
 				AppendText("새로운 참가자 " + UserName + " 입장.");
-				WriteOne("Welcome to Java chat server\n");
-				System.out.println("Welcom server 보냄");
-				WriteOne(UserName + "님 환영합니다.\n"); // 연결된 사용자에게 정상접속을 알림
+				WriteOne(UserName + "님 한성 윷놀이에 오신 것을 환영합니다!\n"); // 연결된 사용자에게 정상접속을 알림
 				SendUserIdx();
 				String msg = "[" + UserName + "]님이 입장 하였습니다.\n";
 				WriteOthers(msg); // 아직 user_vc에 새로 입장한 user는 포함되지 않았다.
@@ -490,7 +490,8 @@ public class YutGameServer extends JFrame {
 					
 					rollResultList.add(yutRollValue);
 					
-					ChatMsg obcm = new ChatMsg("SERVER", "501", cm.data + yutRollValue);
+					System.out.println("yutroll Server" + cm.data + yutRollValue);
+					ChatMsg obcm = new ChatMsg("SERVER", "501", cm.data + yutRollValue + " " + UserName);
 					for (int i = 0; i < UserVec.size(); i++){
 						UserService user = (UserService) UserVec.elementAt(i);
 						user.WriteChatMsg(obcm);
@@ -512,9 +513,44 @@ public class YutGameServer extends JFrame {
 						}
 					}			
 				}else if(cm.code.matches("504")) {
+					System.out.println("서버 504들어옴");
 					this.userSelectObjCnt+=1;
 					System.out.println("UserSelectObjCnt: " + this.userSelectObjCnt +" size: " + rollResultList.size());
-					if(userSelectObjCnt == rollResultList.size()) {
+					
+					System.out.println("data: " + cm.data);
+					//움직인 말 처리
+					if(cm.data.contains("new")) {
+						System.out.println("new object 들어옴");
+						String[] arrowResult = cm.data.split(" ");
+						for(int i=0; i<4; i++) {
+							if(userGameObjectPos[i] == -1) {
+								userGameObjectPos[i] = Integer.parseInt(arrowResult[2]); break;
+							}
+						}
+						
+						
+						StringBuilder allObjectMsg = new StringBuilder("");
+						for (int i = 0; i < UserVec.size(); i++) {
+							UserService user = (UserService) UserVec.elementAt(i);
+							allObjectMsg.append("user").append(' ').append(user.userIdx).append(' ');
+							
+							for(int j=0; j<user.userGameObjectPos.length; j++) {
+								if(user.userGameObjectPos[j] != -1) {
+									allObjectMsg.append(j).append(' ').append(user.userGameObjectPos[j]).append(' ');
+								}
+							}
+						}
+						System.out.println("504보내는 msg" +  allObjectMsg.toString());
+						ChatMsg obcm = new ChatMsg("SERVER", "504",  allObjectMsg.toString());
+						for (int i = 0; i < UserVec.size(); i++) {
+							UserService user = (UserService) UserVec.elementAt(i);
+							user.WriteChatMsg(obcm);
+						}
+					}else {
+						
+					}
+					
+					if(userSelectObjCnt >= rollResultList.size()) {
 						System.out.println("-------------------------------------");
 						System.out.println("Cnt == Size");
 						this.userSelectObjCnt = 0;
@@ -532,7 +568,7 @@ public class YutGameServer extends JFrame {
 							}
 						}
 						
-						ChatMsg obcm = new ChatMsg("SERVER", "500",  nextUserName + " " +turn + " false");
+						ChatMsg obcm = new ChatMsg("SERVER", "500",  nextUserName + " " +turn + " true");
 						for (int i = 0; i < UserVec.size(); i++) {
 							UserService user = (UserService) UserVec.elementAt(i);
 							user.WriteChatMsg(obcm);

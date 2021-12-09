@@ -125,7 +125,8 @@ public class YutGameClientView extends JFrame {
 			userReadyImage.getImage().getScaledInstance(135, 30, Image.SCALE_SMOOTH));
 
 	private ImageIcon img_crown = new ImageIcon(crownImage.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH));
-	private ImageIcon img_arrow = new ImageIcon(arrowImage.getImage().getScaledInstance(20, 30, Image.SCALE_SMOOTH));
+	private ImageIcon img_arrow = new ImageIcon(arrowImage.getImage().getScaledInstance(45, 25, Image.SCALE_SMOOTH));
+
 	private ImageIcon img_roll = new ImageIcon(rollImage.getImage().getScaledInstance(280, 70, Image.SCALE_SMOOTH));
 	private ImageIcon img_rollHover = new ImageIcon(
 			rollHoverImage.getImage().getScaledInstance(280, 70, Image.SCALE_SMOOTH));
@@ -144,11 +145,10 @@ public class YutGameClientView extends JFrame {
 
 	private JLabel[] userObjectCntLabel = new JLabel[4];
 	private JLabel[] userNameText = new JLabel[4];
-	private int[] userObjectCnt = new int[] { 4, 4, 4, 4 };
+	// private int[] userObjectCnt = new int[] { 4, 4, 4, 4 };
 	private JLabel[] yutObjectLabel = new JLabel[4];
 	private JLabel[] userReadyLabel = new JLabel[4];
 	private JLabel[] crownLabel = new JLabel[4];
-	private JLabel[] arrowLabel = new JLabel[4];
 
 	private int userIdx = 3;
 	private int[] yutList = new int[4];
@@ -159,8 +159,11 @@ public class YutGameClientView extends JFrame {
 	private String rollUserName = "";
 	private boolean isPlaying = false;
 	private int playTurnIdx = 0;
-	private JLabel[] userGameObject = new JLabel[4];
-	private List<GameObject> gameObjectList = new ArrayList();
+	private int restUserObjectCnt = 4;
+	private int[] userMoveYutCase;
+	private JLabel clickObjectLabel;
+	private String userClickObjectName = "";
+	private List<JLabel> gameObjectList = new ArrayList();
 
 	private int[][] spotPos = new int[][] { { 670, 450, 60, 60, 0 }, { 670, 350, 60, 60, 0 }, { 670, 250, 60, 60, 0 },
 			{ 670, 150, 60, 60, 0 }, { 660, 30, 80, 80, 1 }, { 540, 40, 60, 60, 0 }, { 420, 40, 60, 60, 0 },
@@ -170,6 +173,8 @@ public class YutGameClientView extends JFrame {
 			{ 660, 550, 80, 80, 1 }, { 170, 140, 60, 60, 0 }, { 260, 210, 60, 60, 0 }, { 350, 280, 80, 80, 1 },
 			{ 460, 370, 60, 60, 0 }, { 550, 450, 60, 60, 0 }, { 550, 140, 60, 60, 0 }, { 460, 210, 60, 60, 0 },
 			{ 260, 370, 60, 60, 0 }, { 170, 450, 60, 60, 0 }, };
+
+	private JLabel[] arrowLabel = new JLabel[spotPos.length];
 
 	/**
 	 * Create the frame.
@@ -189,9 +194,17 @@ public class YutGameClientView extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 
-		for (int i = 0; i < 4; i++) {
-			userGameObject[i] = new JLabel();
-			contentPane.add(userGameObject[i]);
+		for (int i = 0; i < arrowLabel.length; i++) {
+			arrowLabel[i] = new JLabel();
+			arrowLabel[i].setIcon(img_arrow);
+			arrowLabel[i].setName("arrow " + i);
+			arrowLabel[i].setVisible(false);
+			if (spotPos[i][4] == 1)
+				arrowLabel[i].setBounds(spotPos[i][0] + 17, spotPos[i][1] - 25, 45, 25);
+			else
+				arrowLabel[i].setBounds(spotPos[i][0] + 8, spotPos[i][1] - 25, 45, 25);
+			arrowLabel[i].addMouseListener(new MyMouseAdapter());
+			contentPane.add(arrowLabel[i]);
 		}
 
 		for (int i = 0; i < 29; i++) {
@@ -277,7 +290,6 @@ public class YutGameClientView extends JFrame {
 				userObjectLabel[i]
 						.setIcon(new ImageIcon(character1.getImage().getScaledInstance(20, 30, Image.SCALE_SMOOTH)));
 				userObjectCntLabel[i].setBounds(140, 710, 20, 20);
-				userObjectCntLabel[i].setText(Integer.toString(userObjectCnt[i]));
 				userObjectCntLabel[i].setFont(new Font("bold", Font.PLAIN, 30));
 			} else if (i == 1) {
 				userPanel[i].setBounds(243, 680, 135, 169);
@@ -290,7 +302,6 @@ public class YutGameClientView extends JFrame {
 				userObjectLabel[i]
 						.setIcon(new ImageIcon(character2.getImage().getScaledInstance(20, 30, Image.SCALE_SMOOTH)));
 				userObjectCntLabel[i].setBounds(359, 710, 20, 20);
-				userObjectCntLabel[i].setText(Integer.toString(userObjectCnt[i]));
 				userObjectCntLabel[i].setFont(new Font("bold", Font.PLAIN, 30));
 			} else if (i == 2) {
 				userPanel[i].setBounds(458, 680, 135, 169);
@@ -303,7 +314,6 @@ public class YutGameClientView extends JFrame {
 				userObjectLabel[i]
 						.setIcon(new ImageIcon(character3.getImage().getScaledInstance(20, 30, Image.SCALE_SMOOTH)));
 				userObjectCntLabel[i].setBounds(574, 710, 20, 20);
-				userObjectCntLabel[i].setText(Integer.toString(userObjectCnt[i]));
 				userObjectCntLabel[i].setFont(new Font("bold", Font.PLAIN, 30));
 			} else {
 				userPanel[i].setBounds(669, 680, 135, 169);
@@ -316,9 +326,12 @@ public class YutGameClientView extends JFrame {
 				userObjectLabel[i]
 						.setIcon(new ImageIcon(character4.getImage().getScaledInstance(20, 30, Image.SCALE_SMOOTH)));
 				userObjectCntLabel[i].setBounds(785, 710, 20, 20);
-				userObjectCntLabel[i].setText(Integer.toString(userObjectCnt[i]));
 				userObjectCntLabel[i].setFont(new Font("bold", Font.PLAIN, 30));
 			}
+			userObjectCntLabel[i].setText("4");
+			userObjectLabel[i].setName("userObjectStart " + i);
+			userObjectLabel[i].addMouseListener(new MyMouseAdapter());
+
 			userNameText[i].setVisible(false);
 			userImageLabel[i].setVisible(false);
 			userObjectLabel[i].setVisible(false);
@@ -330,6 +343,12 @@ public class YutGameClientView extends JFrame {
 			contentPane.add(userPanel[i]);
 		}
 
+		/*
+		 * userGameObject[objectIdx].addMouseListener(new MouseAdapter() {
+		 * 
+		 * @Override public void mouseClicked(MouseEvent e) { // 마우스로 클릭했을 때
+		 * System.out.println(((JLabel) e.getSource()).getName()); } });
+		 */
 		for (int i = 0; i < 4; i++) {
 			yutObjectLabel[i] = new JLabel();
 			yutObjectLabel[i].setBounds(840 + 100 * i, 60, 70, 280);
@@ -365,7 +384,7 @@ public class YutGameClientView extends JFrame {
 		contentPane.add(lblUserName);
 		setVisible(true);
 
-		AppendText("User " + username + " connecting " + ip_addr + " " + port_no);
+		// AppendText("User " + username + " connecting " + ip_addr + " " + port_no);
 		UserName = username;
 		lblUserName.setText(username);
 
@@ -549,13 +568,14 @@ public class YutGameClientView extends JFrame {
 		btnRollYut.setVisible(false);
 		contentPane.add(btnRollYut);
 
-		JCheckBox autoPlayCheck = new JCheckBox("Auto Play");
-		autoPlayCheck.setBounds(828, 487, 115, 23);
-		contentPane.add(autoPlayCheck);
-
-		JButton btnRollBack = new JButton("RollBack");
-		btnRollBack.setBounds(1115, 487, 97, 23);
-		contentPane.add(btnRollBack);
+		// 자동진행 + rollback
+		/*
+		 * JCheckBox autoPlayCheck = new JCheckBox("Auto Play");
+		 * autoPlayCheck.setBounds(828, 487, 115, 23); contentPane.add(autoPlayCheck);
+		 * 
+		 * JButton btnRollBack = new JButton("RollBack"); btnRollBack.setBounds(1115,
+		 * 487, 97, 23); contentPane.add(btnRollBack);
+		 */
 
 		try {
 			socket = new Socket(ip_addr, Integer.parseInt(port_no));
@@ -725,7 +745,8 @@ public class YutGameClientView extends JFrame {
 					System.out.println(cm.code + " " + cm.UserName + " " + cm.data);
 					break;
 				case "500":
-					System.out.println("턴체인지");
+					isPlaying = true;
+					System.out.println("500 턴체인지");
 					isRoll = false;
 					String[] userTurn = cm.data.split(" ");
 					System.out.println(userTurn[0] + "이 윷을 던짐");
@@ -736,8 +757,9 @@ public class YutGameClientView extends JFrame {
 					repaint();
 					break;
 				case "501":
-					System.out.println("rollResult: " + cm.data + " rollUserName: " + rollUserName);
+					System.out.println("501 들어옴");
 					String[] yutRollResult = cm.data.split(" ");
+
 					for (int i = 0; i < 4; i++) {
 						int yut = Integer.parseInt(yutRollResult[i]);
 						if (yut == 1) {
@@ -766,39 +788,153 @@ public class YutGameClientView extends JFrame {
 					repaint();
 					break;
 				case "502":
+					System.out.println("502 들어옴");
 					isRoll = false;
 					break;
 				case "503":
+					System.out.println("503 들어옴");
 					System.out.println("캐릭터 선택하면 됨");
-					int objectIdx = gameObjectList.size() + 1;
-					gameObjectList.add(new GameObject(objectIdx, 3, userIdx));
-					userGameObject[objectIdx].setName(Integer.toString(objectIdx));
-					userGameObject[objectIdx].addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) { // 마우스로 클릭했을 때
-							System.out.println(((JLabel) e.getSource()).getName());
-						}
-					});
-//
-					if (userIdx == 0)
-						userGameObject[objectIdx].setIcon(
-								new ImageIcon(character1.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
-					else if (userIdx == 1)
-						userGameObject[objectIdx].setIcon(
-								new ImageIcon(character2.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
-					else if (userIdx == 2)
-						userGameObject[objectIdx].setIcon(
-								new ImageIcon(character3.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
-					else if (userIdx == 3)
-						userGameObject[objectIdx].setIcon(
-								new ImageIcon(character4.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
-					userGameObject[objectIdx].setBounds(spotPos[0][0] + 12, spotPos[0][1], spotPos[0][2], spotPos[0][3]);
 
+					String[] rollResult = cm.data.split(" ");
+					userMoveYutCase = new int[rollResult.length];
+					for (int i = 0; i < userMoveYutCase.length; i++) {
+						userMoveYutCase[i] = Integer.parseInt(rollResult[i]);
+					}
+
+//					int objectIdx = gameObjectList.size() + 1;
+//					gameObjectList.add(new GameObject(objectIdx, 3, playTurnIdx));
+//					userGameObject[objectIdx].setName(Integer.toString(objectIdx));
+//					userGameObject[objectIdx].addMouseListener(new MyMouseAdapter());
+////
+//					if (playTurnIdx == 0)
+//						userGameObject[objectIdx].setIcon(
+//								new ImageIcon(character1.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
+//					else if (playTurnIdx == 1)
+//						userGameObject[objectIdx].setIcon(
+//								new ImageIcon(character2.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
+//					else if (playTurnIdx == 2)
+//						userGameObject[objectIdx].setIcon(
+//								new ImageIcon(character3.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
+//					else if (playTurnIdx == 3)
+//						userGameObject[objectIdx].setIcon(
+//								new ImageIcon(character4.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
+//					userGameObject[objectIdx].setBounds(spotPos[0][0] + 12, spotPos[0][1], spotPos[0][2], spotPos[0][3]);
+
+//					System.out.println("503부분 504보내기 전");
+//					ChatMsg obcm = new ChatMsg(UserName, "504", "finish");
+//					SendChatMsg(obcm);
+					break;
+				case "504":
+					System.out.println("504들어옴 " + cm.data);
+					String[] moveResult = cm.data.split(" ");
+					for (int i = 0; i < moveResult.length; i++)
+						System.out.println(moveResult[i]);
+					System.out.println("moveResult 출력 끝");
+
+					gameObjectList.clear();
+					int index = 0;
+					int userMoveIdx = 0;
+					while (index < moveResult.length) {
+						if (moveResult[index].equals("user")) {
+							userMoveIdx = Integer.parseInt(moveResult[index + 1]);
+						} else {
+							int objectIdx = Integer.parseInt(moveResult[index]);
+							int pos = Integer.parseInt(moveResult[index + 1]);
+							JLabel objectLabel = new JLabel();
+							if (userMoveIdx == 0)
+								objectLabel.setIcon(new ImageIcon(
+										character1.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
+							else if (userMoveIdx == 1)
+								objectLabel.setIcon(new ImageIcon(
+										character2.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
+							else if (userMoveIdx == 2)
+								objectLabel.setIcon(new ImageIcon(
+										character3.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
+							else if (userMoveIdx == 3)
+								objectLabel.setIcon(new ImageIcon(
+										character4.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
+							objectLabel.addMouseListener(new MyMouseAdapter());
+							objectLabel.setName("object " +userMoveIdx + " " + objectIdx);
+							if (spotPos[pos][4] == 1)
+								objectLabel.setBounds(spotPos[pos][0] + 19, spotPos[pos][1] + 10, 35, 50);
+							else
+								objectLabel.setBounds(spotPos[pos][0] + 12, spotPos[pos][1], 35, 50);
+							contentPane.add(objectLabel);
+							contentPane.setComponentZOrder(objectLabel, 2);
+							gameObjectList.add(objectLabel);
+						}
+						index += 2;
+					}
+					repaint();
 					break;
 				}
 			}
 		}
 	}
+
+	class MyMouseAdapter extends MouseAdapter {
+		@Override
+		public void mouseClicked(MouseEvent e) { // 마우스로 클릭했을 때
+			if (isPlaying) {
+				System.out.println(((JLabel) e.getSource()).getName());
+				System.out.println("playTurnIdx: " + playTurnIdx + " userIdx: " + userIdx);
+				if (userIdx == playTurnIdx) {
+					System.out.println("선택가능");
+//					ChatMsg obcm = new ChatMsg(UserName, "504", "finish");
+//					SendChatMsg(obcm);
+					JLabel clickLabel = (JLabel) e.getSource();
+					String labelName = clickLabel.getName();
+					if (labelName.equals("userObjectStart " + playTurnIdx)) {
+						clickObjectLabel = clickLabel;
+						userClickObjectName = "new Object";
+
+						if (restUserObjectCnt == 0)
+							AppendText("더이상 말을 추가할 수 없습니다.");
+						else {
+							System.out.println("내꺼 새로운 오브젝트 생성");
+
+							System.out.println("같음 / caseLength: " + userMoveYutCase.length);
+							for (int i = 0; i < userMoveYutCase.length; i++) {
+								arrowLabel[userMoveYutCase[i] - 1].setVisible(true);
+							}
+							repaint();
+						}
+					} else if (labelName.contains("object")) {
+						System.out.println("오브젝트 클릭");
+						clickObjectLabel = clickLabel;
+						userClickObjectName = "object";
+						String[] labelSplit = labelName.split(" ");
+						
+						if (Integer.parseInt(labelSplit[1]) == userIdx) {
+							for (int i = 0; i < userMoveYutCase.length; i++) {
+								arrowLabel[userMoveYutCase[i] - 1].setVisible(true);
+							}
+							repaint();
+						}
+						
+					} else if (labelName.contains("arrow")) {
+						String[] labelSplit = labelName.split(" ");
+						int arrowPos = Integer.parseInt(labelSplit[1]);
+						if (userClickObjectName.equals("new Object")) {
+							System.out.println("새로운 오브젝트");
+							ChatMsg obcm = new ChatMsg(UserName, "504", "new object " + arrowPos);
+							SendChatMsg(obcm);
+							for (int i = 0; i < userMoveYutCase.length; i++)
+								arrowLabel[userMoveYutCase[i] - 1].setVisible(false);
+							
+						} else if (userClickObjectName.equals("object")) {
+							ChatMsg obcm = new ChatMsg(UserName, "504", "move object " + clickLabel.getName()+" "+arrowPos);
+							SendChatMsg(obcm);
+							for (int i = 0; i < userMoveYutCase.length; i++)
+								arrowLabel[userMoveYutCase[i] - 1].setVisible(false);
+							repaint();
+						}
+					}
+				}
+			}
+		}
+
+	};
 
 // keyboard enter key 치면 서버로 전송
 	class TextSendAction implements ActionListener {
