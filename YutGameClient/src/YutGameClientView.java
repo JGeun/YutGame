@@ -25,11 +25,13 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -39,7 +41,6 @@ import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import java.util.*;
 
 public class YutGameClientView extends JFrame {
 	/**
@@ -145,7 +146,7 @@ public class YutGameClientView extends JFrame {
 
 	private JLabel[] userObjectCntLabel = new JLabel[4];
 	private JLabel[] userNameText = new JLabel[4];
-	// private int[] userObjectCnt = new int[] { 4, 4, 4, 4 };
+	private int[] userObjectCnt = new int[] { 4, 4, 4, 4 };
 	private JLabel[] yutObjectLabel = new JLabel[4];
 	private JLabel[] userReadyLabel = new JLabel[4];
 	private JLabel[] crownLabel = new JLabel[4];
@@ -155,12 +156,14 @@ public class YutGameClientView extends JFrame {
 	private UserData[] userList = new UserData[4];
 	private boolean Owner = true;
 	private boolean[] userReadyList = new boolean[4];
-	private boolean isRoll = false;
+	private int rollAvailableCnt = 0;
 	private String rollUserName = "";
 	private boolean isPlaying = false;
 	private int playTurnIdx = 0;
 	private int restUserObjectCnt = 4;
 	private int[] userMoveYutCase;
+	private ArrayList<JLabel> tempArrowList = new ArrayList(); 
+	private int[] userObjectPos = new int[] { -1, -1, -1, -1 };
 	private JLabel clickObjectLabel;
 	private String userClickObjectName = "";
 	private List<JLabel> gameObjectList = new ArrayList();
@@ -172,7 +175,7 @@ public class YutGameClientView extends JFrame {
 			{ 180, 560, 60, 60, 0 }, { 300, 560, 60, 60, 0 }, { 420, 560, 60, 60, 0 }, { 540, 560, 60, 60, 0 },
 			{ 660, 550, 80, 80, 1 }, { 170, 140, 60, 60, 0 }, { 260, 210, 60, 60, 0 }, { 350, 280, 80, 80, 1 },
 			{ 460, 370, 60, 60, 0 }, { 550, 450, 60, 60, 0 }, { 550, 140, 60, 60, 0 }, { 460, 210, 60, 60, 0 },
-			{ 260, 370, 60, 60, 0 }, { 170, 450, 60, 60, 0 }, };
+			{ 260, 370, 60, 60, 0 }, { 170, 450, 60, 60, 0 }, { 740, 600, 80, 80, 1 }};
 
 	private JLabel[] arrowLabel = new JLabel[spotPos.length];
 
@@ -181,6 +184,7 @@ public class YutGameClientView extends JFrame {
 	 */
 	public YutGameClientView(String username, String ip_addr, String port_no) {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setResizable(false);
 		setBounds(100, 100, SCREEN_WIDTH, SCREEN_HEIGHT);
 		contentPane = new JPanel() {
 			public void paintComponent(Graphics g) {
@@ -289,7 +293,7 @@ public class YutGameClientView extends JFrame {
 				userObjectLabel[i].setBounds(115, 705, 20, 30);
 				userObjectLabel[i]
 						.setIcon(new ImageIcon(character1.getImage().getScaledInstance(20, 30, Image.SCALE_SMOOTH)));
-				userObjectCntLabel[i].setBounds(140, 710, 20, 20);
+				userObjectCntLabel[i].setBounds(140, 710, 20, 25);
 				userObjectCntLabel[i].setFont(new Font("bold", Font.PLAIN, 30));
 			} else if (i == 1) {
 				userPanel[i].setBounds(243, 680, 135, 169);
@@ -301,7 +305,7 @@ public class YutGameClientView extends JFrame {
 				userObjectLabel[i].setBounds(334, 705, 20, 30);
 				userObjectLabel[i]
 						.setIcon(new ImageIcon(character2.getImage().getScaledInstance(20, 30, Image.SCALE_SMOOTH)));
-				userObjectCntLabel[i].setBounds(359, 710, 20, 20);
+				userObjectCntLabel[i].setBounds(359, 710, 20, 25);
 				userObjectCntLabel[i].setFont(new Font("bold", Font.PLAIN, 30));
 			} else if (i == 2) {
 				userPanel[i].setBounds(458, 680, 135, 169);
@@ -313,7 +317,7 @@ public class YutGameClientView extends JFrame {
 				userObjectLabel[i].setBounds(549, 705, 20, 30);
 				userObjectLabel[i]
 						.setIcon(new ImageIcon(character3.getImage().getScaledInstance(20, 30, Image.SCALE_SMOOTH)));
-				userObjectCntLabel[i].setBounds(574, 710, 20, 20);
+				userObjectCntLabel[i].setBounds(574, 710, 20, 25);
 				userObjectCntLabel[i].setFont(new Font("bold", Font.PLAIN, 30));
 			} else {
 				userPanel[i].setBounds(669, 680, 135, 169);
@@ -325,10 +329,10 @@ public class YutGameClientView extends JFrame {
 				userObjectLabel[i].setBounds(760, 705, 20, 30);
 				userObjectLabel[i]
 						.setIcon(new ImageIcon(character4.getImage().getScaledInstance(20, 30, Image.SCALE_SMOOTH)));
-				userObjectCntLabel[i].setBounds(785, 710, 20, 20);
+				userObjectCntLabel[i].setBounds(785, 710, 20, 25);
 				userObjectCntLabel[i].setFont(new Font("bold", Font.PLAIN, 30));
 			}
-			userObjectCntLabel[i].setText("4");
+			userObjectCntLabel[i].setText(Integer.toString(userObjectCnt[i]));
 			userObjectLabel[i].setName("userObjectStart " + i);
 			userObjectLabel[i].addMouseListener(new MyMouseAdapter());
 
@@ -502,7 +506,7 @@ public class YutGameClientView extends JFrame {
 				if (userIdx != playTurnIdx) {
 					AppendText("아직 플레이어님의 턴이 아닙니다");
 				} else {
-					if (!isRoll) {
+					if (rollAvailableCnt != 0) {
 						random.setSeed(System.currentTimeMillis());
 						int special = random.nextInt(100);
 						int specialPos = random.nextInt(4);
@@ -544,7 +548,7 @@ public class YutGameClientView extends JFrame {
 							}
 						}
 
-						isRoll = true;
+						rollAvailableCnt -= 1;
 						ChatMsg obcm = new ChatMsg(UserName, "501", yutRollResult.toString()); // 로그인
 						SendChatMsg(obcm);
 
@@ -710,7 +714,6 @@ public class YutGameClientView extends JFrame {
 					} else {
 						btnGameStart.setIcon(img_gameReadyFinish);
 					}
-
 					repaint();
 					break;
 				case "105":
@@ -747,13 +750,12 @@ public class YutGameClientView extends JFrame {
 				case "500":
 					isPlaying = true;
 					System.out.println("500 턴체인지");
-					isRoll = false;
+					rollAvailableCnt = 1;
 					String[] userTurn = cm.data.split(" ");
 					System.out.println(userTurn[0] + "이 윷을 던짐");
 					rollUserName = userTurn[0];
 					playTurnIdx = Integer.parseInt(userTurn[1]);
-					if (userTurn[2].equals("true"))
-						AppendText(userTurn[0] + "의 차례입니다!!!!");
+					AppendText(userTurn[0] + "의 차례입니다!!!!");
 					repaint();
 					break;
 				case "501":
@@ -789,7 +791,8 @@ public class YutGameClientView extends JFrame {
 					break;
 				case "502":
 					System.out.println("502 들어옴");
-					isRoll = false;
+					AppendText("한 번 더 굴려주세요!!");
+					rollAvailableCnt += 1;
 					break;
 				case "503":
 					System.out.println("503 들어옴");
@@ -800,31 +803,14 @@ public class YutGameClientView extends JFrame {
 					for (int i = 0; i < userMoveYutCase.length; i++) {
 						userMoveYutCase[i] = Integer.parseInt(rollResult[i]);
 					}
-
-//					int objectIdx = gameObjectList.size() + 1;
-//					gameObjectList.add(new GameObject(objectIdx, 3, playTurnIdx));
-//					userGameObject[objectIdx].setName(Integer.toString(objectIdx));
-//					userGameObject[objectIdx].addMouseListener(new MyMouseAdapter());
-////
-//					if (playTurnIdx == 0)
-//						userGameObject[objectIdx].setIcon(
-//								new ImageIcon(character1.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
-//					else if (playTurnIdx == 1)
-//						userGameObject[objectIdx].setIcon(
-//								new ImageIcon(character2.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
-//					else if (playTurnIdx == 2)
-//						userGameObject[objectIdx].setIcon(
-//								new ImageIcon(character3.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
-//					else if (playTurnIdx == 3)
-//						userGameObject[objectIdx].setIcon(
-//								new ImageIcon(character4.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
-//					userGameObject[objectIdx].setBounds(spotPos[0][0] + 12, spotPos[0][1], spotPos[0][2], spotPos[0][3]);
-
-//					System.out.println("503부분 504보내기 전");
-//					ChatMsg obcm = new ChatMsg(UserName, "504", "finish");
-//					SendChatMsg(obcm);
 					break;
 				case "504":
+					System.out.println("504 들어옴 data: " + cm.data);
+					for (int i = 0; i < gameObjectList.size(); i++)
+						contentPane.remove(gameObjectList.get(i));
+
+					gameObjectList.clear();
+
 					System.out.println("504들어옴 " + cm.data);
 					String[] moveResult = cm.data.split(" ");
 					for (int i = 0; i < moveResult.length; i++)
@@ -854,9 +840,11 @@ public class YutGameClientView extends JFrame {
 								objectLabel.setIcon(new ImageIcon(
 										character4.getImage().getScaledInstance(35, 50, Image.SCALE_SMOOTH)));
 							objectLabel.addMouseListener(new MyMouseAdapter());
-							objectLabel.setName("object " +userMoveIdx + " " + objectIdx);
+							objectLabel.setName("object " + userMoveIdx + " " + objectIdx);
+							if (userIdx == userMoveIdx)
+								userObjectPos[objectIdx] = pos;
 							if (spotPos[pos][4] == 1)
-								objectLabel.setBounds(spotPos[pos][0] + 19, spotPos[pos][1] + 10, 35, 50);
+								objectLabel.setBounds(spotPos[pos][0] + 21, spotPos[pos][1] + 12, 35, 50);
 							else
 								objectLabel.setBounds(spotPos[pos][0] + 12, spotPos[pos][1], 35, 50);
 							contentPane.add(objectLabel);
@@ -866,6 +854,15 @@ public class YutGameClientView extends JFrame {
 						index += 2;
 					}
 					repaint();
+					break;
+				case "505":
+					System.out.println("505 들어옴 data: " + cm.data);
+					String[] restObjectCntData = cm.data.split(" ");
+					for (int i = 0; i < restObjectCntData.length; i++) {
+						userObjectCnt[i] = Integer.parseInt(restObjectCntData[i]);
+						userObjectCntLabel[i].setText(Integer.toString(userObjectCnt[i]));
+						repaint();
+					}
 					break;
 				}
 			}
@@ -879,61 +876,119 @@ public class YutGameClientView extends JFrame {
 				System.out.println(((JLabel) e.getSource()).getName());
 				System.out.println("playTurnIdx: " + playTurnIdx + " userIdx: " + userIdx);
 				if (userIdx == playTurnIdx) {
-					System.out.println("선택가능");
-//					ChatMsg obcm = new ChatMsg(UserName, "504", "finish");
-//					SendChatMsg(obcm);
-					JLabel clickLabel = (JLabel) e.getSource();
-					String labelName = clickLabel.getName();
-					if (labelName.equals("userObjectStart " + playTurnIdx)) {
-						clickObjectLabel = clickLabel;
-						userClickObjectName = "new Object";
+					if (rollAvailableCnt != 0) {
+						AppendText("먼저 윷을 굴려주세요!");
+					} else {
+						System.out.println("선택가능");
+//						ChatMsg obcm = new ChatMsg(UserName, "504", "finish");
+//						SendChatMsg(obcm);
+						JLabel clickLabel = (JLabel) e.getSource();
+						String labelName = clickLabel.getName();
+						if (labelName.equals("userObjectStart " + playTurnIdx)) {
+							clickObjectLabel = clickLabel;
+							userClickObjectName = "new Object";
 
-						if (restUserObjectCnt == 0)
-							AppendText("더이상 말을 추가할 수 없습니다.");
-						else {
-							System.out.println("내꺼 새로운 오브젝트 생성");
+							if (userObjectCnt[userIdx] == 0)
+								AppendText("더이상 말을 추가할 수 없습니다.");
+							else {
+								System.out.println("내꺼 새로운 오브젝트 생성");
 
-							System.out.println("같음 / caseLength: " + userMoveYutCase.length);
-							for (int i = 0; i < userMoveYutCase.length; i++) {
-								arrowLabel[userMoveYutCase[i] - 1].setVisible(true);
+								System.out.println("같음 / caseLength: " + userMoveYutCase.length);
+								tempArrowList.clear();
+								for (int i = 0; i < userMoveYutCase.length; i++) {
+									if(userMoveYutCase[i] - 1 == -1 && userObjectCnt[playTurnIdx] == 4) continue;
+									tempArrowList.add(arrowLabel[userMoveYutCase[i] - 1]);
+									arrowLabel[userMoveYutCase[i] - 1].setVisible(true);
+								}
+								repaint();
 							}
-							repaint();
-						}
-					} else if (labelName.contains("object")) {
-						System.out.println("오브젝트 클릭");
-						clickObjectLabel = clickLabel;
-						userClickObjectName = "object";
-						String[] labelSplit = labelName.split(" ");
-						
-						if (Integer.parseInt(labelSplit[1]) == userIdx) {
-							for (int i = 0; i < userMoveYutCase.length; i++) {
-								arrowLabel[userMoveYutCase[i] - 1].setVisible(true);
+						} else if (labelName.contains("object")) {
+							System.out.println("오브젝트 클릭");
+							clickObjectLabel = clickLabel;
+							userClickObjectName = "object";
+							String[] labelSplit = labelName.split(" ");
+
+							tempArrowList.clear();
+							if (Integer.parseInt(labelSplit[1]) == userIdx) {
+								int objectPos = userObjectPos[Integer.parseInt(labelSplit[2])];
+								for (int i = 0; i < userMoveYutCase.length; i++) {
+									int arrowIdx = 0;
+									if (userMoveYutCase[i] == -1){
+										if (objectPos == 0)
+											arrowIdx = 19;
+										else if (objectPos == 25)
+											arrowIdx = 4;
+										else if (objectPos == 20)
+											arrowIdx = 9;
+										else
+											arrowIdx = objectPos - 1;
+									} else { // 도착 시 처리 19 처리해야함
+										int moveDist = userMoveYutCase[i] - 1;
+										if (objectPos == 4) {
+											if (moveDist == 2) arrowIdx = 22;
+											else if(moveDist == 0 || moveDist == 1) arrowIdx = 25 + moveDist;
+											else arrowIdx = 25 + moveDist - 1;
+										} else if (objectPos == 9) {
+											arrowIdx = 20 + moveDist;
+										} else if (objectPos >= 15 && objectPos <= 19) {
+											if (objectPos + moveDist + 1 > 19)
+												arrowIdx = 29; // 도착 시 처리
+											else arrowIdx = objectPos + moveDist + 1;
+										} else if (objectPos >= 20 && objectPos <= 24) {
+											if (objectPos + moveDist + 1 > 24) arrowIdx = 29;  // 도착 시 처리
+											else arrowIdx = objectPos + moveDist + 1;
+										} else if (objectPos >= 25 && objectPos <= 26) {
+											if(moveDist == 1 && objectPos == 25) arrowIdx = 22;
+											else if(moveDist == 0 && objectPos == 26) arrowIdx = 22;
+											else if(moveDist + objectPos <= 28) arrowIdx = moveDist + objectPos;
+											else arrowIdx = 14 + (29 - moveDist - objectPos);
+										}else if(objectPos >= 27 && objectPos <= 28) {
+											if(objectPos == 27 && moveDist == 0) arrowIdx = 28;
+											else arrowIdx = 14 + 28 - objectPos - moveDist;
+										}else {
+											arrowIdx = objectPos + moveDist + 1;
+										}
+									}
+									arrowLabel[arrowIdx].setVisible(true);
+									tempArrowList.add(arrowLabel[arrowIdx]);
+								}
+								repaint();
 							}
-							repaint();
-						}
-						
-					} else if (labelName.contains("arrow")) {
-						String[] labelSplit = labelName.split(" ");
-						int arrowPos = Integer.parseInt(labelSplit[1]);
-						if (userClickObjectName.equals("new Object")) {
-							System.out.println("새로운 오브젝트");
-							ChatMsg obcm = new ChatMsg(UserName, "504", "new object " + arrowPos);
-							SendChatMsg(obcm);
-							for (int i = 0; i < userMoveYutCase.length; i++)
-								arrowLabel[userMoveYutCase[i] - 1].setVisible(false);
+
+						} else if (labelName.contains("arrow")) {
+							System.out.println("arrow 클릭");
 							
-						} else if (userClickObjectName.equals("object")) {
-							ChatMsg obcm = new ChatMsg(UserName, "504", "move object " + clickLabel.getName()+" "+arrowPos);
+							int useYutCaseIdx = 0;
+							for(int j=0; j<tempArrowList.size(); j++) {
+								if(tempArrowList.get(j).getName().equals(labelName)) {
+									useYutCaseIdx = j;
+									break;
+								}
+							}
+							
+							String[] labelSplit = labelName.split(" ");
+							int arrowPos = Integer.parseInt(labelSplit[1]);
+							String arrowMsg = "";
+							if (userClickObjectName.equals("new Object")) {
+								System.out.println("새로운 오브젝트");
+								arrowMsg = "new object " + arrowPos + " " + useYutCaseIdx;
+							} else if (userClickObjectName.equals("object")) {
+								System.out.println("clickLabelName: " + clickObjectLabel.getName());
+								arrowMsg = "move " + clickObjectLabel.getName() + " " + arrowPos + " " + useYutCaseIdx;
+							}
+							System.out.println(arrowMsg);
+							ChatMsg obcm = new ChatMsg(UserName, "504", arrowMsg);
 							SendChatMsg(obcm);
-							for (int i = 0; i < userMoveYutCase.length; i++)
-								arrowLabel[userMoveYutCase[i] - 1].setVisible(false);
+							for (int i = 0; i < arrowLabel.length; i++)
+								arrowLabel[i].setVisible(false);
+							tempArrowList.clear();
 							repaint();
 						}
 					}
+
 				}
 			}
 		}
-
 	};
 
 // keyboard enter key 치면 서버로 전송

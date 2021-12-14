@@ -14,6 +14,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 
@@ -43,7 +44,7 @@ public class YutGameServer extends JFrame {
 	private static final int BUF_LEN = 128; // Windows 처럼 BUF_LEN 을 정의
 	private boolean[] userConnect = new boolean[4];
 	private int playTurnIdx = 0;
-	
+
 	/**
 	 * Launch the application.
 	 */
@@ -165,13 +166,13 @@ public class YutGameServer extends JFrame {
 		public String UserName = "";
 		public String imagepath = "";
 		public int userIdx = -1;
-		public int[] userGameObjectPos = new int[] {-1, -1, -1, -1};
+		public int[] userGameObjectPos = new int[] { -1, -1, -1, -1 };
+		public int[] overlapGameObjectIdx = new int[] { -1, -1, -1, -1 };
 		public int restObjectCnt = 4;
 		public boolean isOwner = false;
 		public boolean isReady = false;
-		private int userSelectObjCnt = 0;
 		private List<Integer> rollResultList = new ArrayList();
-		
+
 		public UserService(Socket client_socket) {
 			// TODO Auto-generated constructor stub
 			// 매개변수로 넘어온 자료 저장
@@ -280,7 +281,7 @@ public class YutGameServer extends JFrame {
 				data.append(user.userIdx).append(' ').append(user.UserName).append(' ').append(user.isOwner).append(' ')
 						.append(user.isReady).append(' ');
 			}
-			
+
 			for (int i = 0; i < UserVec.size(); i++) {
 				UserService user = (UserService) UserVec.elementAt(i);
 				ChatMsg obcm = new ChatMsg("SERVER", "102", data.toString());
@@ -400,9 +401,9 @@ public class YutGameServer extends JFrame {
 						UserService user = (UserService) UserVec.elementAt(i);
 						user.WriteChatMsg(obcm);
 					}
-				
+
 					if (readyCnt == UserVec.size() - 1) {
-						obcm = new ChatMsg("SERVER", "500",  cm.UserName + " " +playTurnIdx+ " true");
+						obcm = new ChatMsg("SERVER", "500", cm.UserName + " " + playTurnIdx + " true");
 						for (int i = 0; i < UserVec.size(); i++) {
 							UserService user = (UserService) UserVec.elementAt(i);
 							user.WriteChatMsg(obcm);
@@ -452,7 +453,7 @@ public class YutGameServer extends JFrame {
 					break;
 				} else if (cm.code.matches("300")) {
 					WriteAllObject(cm);
-				}else if(cm.code.matches("501")) {
+				} else if (cm.code.matches("501")) {
 					boolean hasBackShow = false;
 					int yutRollValue = 1;
 					int yutCnt = 0;
@@ -460,13 +461,13 @@ public class YutGameServer extends JFrame {
 					for (int i = 0; i < 4; i++) {
 						int yut = Integer.parseInt(yutRollResult[i]);
 						if (yut != 1) {
-							yutCnt+=1;
+							yutCnt += 1;
 							if (yut == -1) {
 								hasBackShow = true;
 							}
 						}
 					}
-					
+
 					switch (yutCnt) {
 					case 1:
 						if (hasBackShow)
@@ -487,95 +488,210 @@ public class YutGameServer extends JFrame {
 						yutRollValue = 5;
 						break;
 					}
-					
+
 					rollResultList.add(yutRollValue);
-					
+					Collections.sort(rollResultList);
+
 					System.out.println("yutroll Server" + cm.data + yutRollValue);
 					ChatMsg obcm = new ChatMsg("SERVER", "501", cm.data + yutRollValue + " " + UserName);
-					for (int i = 0; i < UserVec.size(); i++){
+					for (int i = 0; i < UserVec.size(); i++) {
 						UserService user = (UserService) UserVec.elementAt(i);
 						user.WriteChatMsg(obcm);
 					}
-					
-					if(yutRollValue == 4 || yutRollValue == 5) {
+
+					if (yutRollValue == 4 || yutRollValue == 5) {
 						obcm = new ChatMsg("SERVER", "502", "roll again");
 						for (int i = 0; i < UserVec.size(); i++) {
 							UserService user = (UserService) UserVec.elementAt(i);
 							user.WriteChatMsg(obcm);
 						}
-					}else {
+					} else {
 						StringBuilder sb = new StringBuilder("");
-						for(int i=0; i<rollResultList.size(); i++) sb.append(rollResultList.get(i)).append(' ');
+						for (int i = 0; i < rollResultList.size(); i++)
+							sb.append(rollResultList.get(i)).append(' ');
 						obcm = new ChatMsg("SERVER", "503", sb.toString());
 						for (int i = 0; i < UserVec.size(); i++) {
 							UserService user = (UserService) UserVec.elementAt(i);
 							user.WriteChatMsg(obcm);
 						}
-					}			
-				}else if(cm.code.matches("504")) {
-					System.out.println("서버 504들어옴");
-					this.userSelectObjCnt+=1;
-					System.out.println("UserSelectObjCnt: " + this.userSelectObjCnt +" size: " + rollResultList.size());
-					
-					System.out.println("data: " + cm.data);
-					//움직인 말 처리
-					if(cm.data.contains("new")) {
-						System.out.println("new object 들어옴");
+					}
+				} else if (cm.code.matches("504")) {
+					AppendText("504> 화살표 클릭 data: " + cm.data);
+
+					System.out.println("504 data: " + cm.data);
+					// 움직인 말 처리
+
+					int arrowpos = -1;
+					int objectIdx = -1;
+					boolean isArival = false;
+					if (cm.data.contains("new")) {
+						this.restObjectCnt -= 1;
 						String[] arrowResult = cm.data.split(" ");
-						for(int i=0; i<4; i++) {
-							if(userGameObjectPos[i] == -1) {
-								userGameObjectPos[i] = Integer.parseInt(arrowResult[2]); break;
+						arrowpos = Integer.parseInt(arrowResult[2]);
+						rollResultList.remove(Integer.parseInt(arrowResult[3]));
+					} else {
+						String[] arrowResult = cm.data.split(" "); // move object useridx objectIdx arrpos removeIdx
+						objectIdx = Integer.parseInt(arrowResult[3]);
+						arrowpos = Integer.parseInt(arrowResult[4]);
+						if (arrowpos == 29)
+							isArival = true;
+						rollResultList.remove(Integer.parseInt(arrowResult[5]));
+					}
+
+					if (isArival) { // 도착하면 무조건 move object이기에 objectIdx가 있다.
+						userGameObjectPos[objectIdx] = -1;
+
+						for (int i = 0; i < 4; i++) {
+							if (overlapGameObjectIdx[i] == objectIdx) {
+								overlapGameObjectIdx[i] = -1;
+								userGameObjectPos[i] = -1;
 							}
 						}
+
+						sendObjectInfo();
 						
-						
-						StringBuilder allObjectMsg = new StringBuilder("");
-						for (int i = 0; i < UserVec.size(); i++) {
-							UserService user = (UserService) UserVec.elementAt(i);
-							allObjectMsg.append("user").append(' ').append(user.userIdx).append(' ');
-							
-							for(int j=0; j<user.userGameObjectPos.length; j++) {
-								if(user.userGameObjectPos[j] != -1) {
-									allObjectMsg.append(j).append(' ').append(user.userGameObjectPos[j]).append(' ');
+						if (restObjectCnt == 0) {
+							boolean isWin = true;
+							for (int i = 0; i < 4; i++) {
+								if (userGameObjectPos[i] != -1) {
+									isWin = false;
+									break;
 								}
 							}
+							if (isWin) {
+								// TODO 게임 끝
+							}
 						}
-						System.out.println("504보내는 msg" +  allObjectMsg.toString());
-						ChatMsg obcm = new ChatMsg("SERVER", "504",  allObjectMsg.toString());
-						for (int i = 0; i < UserVec.size(); i++) {
-							UserService user = (UserService) UserVec.elementAt(i);
-							user.WriteChatMsg(obcm);
-						}
-					}else {
-						
-					}
-					
-					if(userSelectObjCnt >= rollResultList.size()) {
-						System.out.println("-------------------------------------");
-						System.out.println("Cnt == Size");
-						this.userSelectObjCnt = 0;
-						this.rollResultList.clear();
-						System.out.println("초기화 userCnt: " + userSelectObjCnt + " size: "+rollResultList.size());
-						System.out.println("-------------------------------------");
-						playTurnIdx += 1;
-						int turn = playTurnIdx%UserVec.size();
-						String nextUserName = "";
-						for(int i=0; i<UserVec.size(); i++) {
-							UserService user = (UserService) UserVec.elementAt(i);
-							if(user.userIdx == turn) {
-								nextUserName = user.UserName;
+					} else {
+						int overlapIdx = -1;
+						boolean isOverlap = false;
+						for (int i = 0; i < 4; i++) {
+							if (userGameObjectPos[i] == arrowpos) {
+								isOverlap = true;
+								overlapIdx = i;
 								break;
 							}
 						}
-						
-						ChatMsg obcm = new ChatMsg("SERVER", "500",  nextUserName + " " +turn + " true");
+
+						if (cm.data.contains("new")) {
+							for (int i = 0; i < 4; i++) {
+								if (userGameObjectPos[i] == -1 && overlapGameObjectIdx[i] == -1) {
+									if (!isOverlap)
+										userGameObjectPos[i] = arrowpos;
+									else
+										overlapGameObjectIdx[i] = overlapIdx;
+									break;
+								}
+							}
+						} else {
+							if (isOverlap) {
+								userGameObjectPos[objectIdx] = -1;
+								overlapGameObjectIdx[objectIdx] = overlapIdx;
+							} else {
+								userGameObjectPos[objectIdx] = arrowpos;
+							}
+						}
+
+						boolean isRemoveOtherObject = false;
+
+						if (!isOverlap) {
+							for (int i = 0; i < UserVec.size(); i++) {
+								UserService user = (UserService) UserVec.elementAt(i);
+								for (int j = 0; j < user.userGameObjectPos.length; j++) {
+									if (user == this)
+										continue;
+
+									if (user.userGameObjectPos[j] == arrowpos) {
+										user.userGameObjectPos[j] = -1;
+
+										int addRestCnt = 1;
+										for (int k = 0; k < user.overlapGameObjectIdx.length; k++) {
+											if (user.overlapGameObjectIdx[k] == j) {
+												user.overlapGameObjectIdx[k] = -1;
+												addRestCnt += 1;
+											}
+										}
+										AppendText("유저가 잡은 object개수: " + addRestCnt);
+										user.restObjectCnt += addRestCnt;
+										isRemoveOtherObject = true;
+									}
+								}
+							}
+						}
+
+						sendObjectInfo();
+
+						StringBuilder userRestObjectCnt = new StringBuilder("");
+						for (int i = 0; i < UserVec.size(); i++) {
+							UserService user = (UserService) UserVec.elementAt(i);
+							userRestObjectCnt.append(user.restObjectCnt).append(' ');
+						}
+
+						ChatMsg obcm = new ChatMsg("SERVER", "505", userRestObjectCnt.toString());
 						for (int i = 0; i < UserVec.size(); i++) {
 							UserService user = (UserService) UserVec.elementAt(i);
 							user.WriteChatMsg(obcm);
+						}
+
+						if (isRemoveOtherObject) {
+							obcm = new ChatMsg("SERVER", "502", "roll again");
+							for (int i = 0; i < UserVec.size(); i++) {
+								UserService user = (UserService) UserVec.elementAt(i);
+								user.WriteChatMsg(obcm);
+							}
+						} else if (rollResultList.size() != 0) {
+							StringBuilder sb = new StringBuilder("");
+							for (int i = 0; i < rollResultList.size(); i++)
+								sb.append(rollResultList.get(i)).append(' ');
+							obcm = new ChatMsg("SERVER", "503", sb.toString());
+							for (int i = 0; i < UserVec.size(); i++) {
+								UserService user = (UserService) UserVec.elementAt(i);
+								user.WriteChatMsg(obcm);
+							}
+						} else {
+							this.rollResultList.clear();
+
+							playTurnIdx += 1;
+							int turn = playTurnIdx % UserVec.size();
+							String nextUserName = "";
+							for (int i = 0; i < UserVec.size(); i++) {
+								UserService user = (UserService) UserVec.elementAt(i);
+								if (user.userIdx == turn) {
+									nextUserName = user.UserName;
+									break;
+								}
+							}
+
+							obcm = new ChatMsg("SERVER", "500", nextUserName + " " + turn);
+							for (int i = 0; i < UserVec.size(); i++) {
+								UserService user = (UserService) UserVec.elementAt(i);
+								user.WriteChatMsg(obcm);
+							}
 						}
 					}
 				}
 			} // while
 		} // run
+		
+		public void sendObjectInfo() {
+			StringBuilder allObjectMsg = new StringBuilder("");
+			for (int i = 0; i < UserVec.size(); i++) {
+				UserService user = (UserService) UserVec.elementAt(i);
+				allObjectMsg.append("user").append(' ').append(user.userIdx).append(' ');
+
+				for (int j = 0; j < user.userGameObjectPos.length; j++) {
+					if (user.userGameObjectPos[j] != -1) {
+						allObjectMsg.append(j).append(' ').append(user.userGameObjectPos[j]).append(' ');
+					}
+				}
+			}
+
+			System.out.println("504보내는 msg" + allObjectMsg.toString());
+			ChatMsg obcm = new ChatMsg("SERVER", "504", allObjectMsg.toString());
+			for (int i = 0; i < UserVec.size(); i++) {
+				UserService user = (UserService) UserVec.elementAt(i);
+				user.WriteChatMsg(obcm);
+			}
+		}
 	}
 }
